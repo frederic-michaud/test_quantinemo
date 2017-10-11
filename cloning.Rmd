@@ -1,0 +1,36 @@
+---
+title: "Testing cloning"
+output:
+  html_document: default
+---
+In this notebook, we check if the cloning function works, and how to use it. 
+To do so, we set the mating system to cloning (2), and we change the number of clone: mating_proportion (1 mean only clone and 0 only sexual reproduction). 
+We then check in the Phenotype that the right proportion of individual has no father. 
+
+
+###loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../test_quantinemo2/RQuantiNemo")
+my_sim.base = new("simulation",sim.dir = "cloning/")
+```
+
+### Loop over cloning proportion
+```{r}
+my_sim = my_sim.base
+my_sim <- setParameter(my_sim,"mating_system",2)
+my_sim <- setParameter(my_sim,"patch_capacity",1000)
+my_sim <- setParameter(my_sim,"generations",5)
+
+my_sim <- setParameter(my_sim,"quanti_loci",1)
+my_sim <- setParameter(my_sim,"quanti_save_phenotype ",2)
+
+for(prop in seq(0,1,0.1)){
+  my_sim <- setParameter(my_sim,"mating_proportion",prop)
+  success <- run(my_sim)
+  stopifnot(success=TRUE)
+  Pheno <- loadPheno(my_sim)
+  prop.q <- sum(as.character(Pheno$V7)=="NaN")/length(Pheno$V7)
+  cat("expected: ", prop, "\n", "QuantiNemo: ", prop.q, "\n \n")
+  stopifnot(abs(prop.q - prop) < 0.05)
+}
+```

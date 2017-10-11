@@ -3,6 +3,8 @@ title: "testing population grow"
 output:
   html_document: default
 ---
+In this notebook, we show the different possible population grow that are implemented in Quantinemo, and compare them to R version to see if we observe the expected behaviour. 
+
 
 ##loading package and setting minimal simulation
 ```{r}
