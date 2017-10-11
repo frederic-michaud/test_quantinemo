@@ -7,13 +7,14 @@ output:
 ##loading package and setting minimal simulation
 ```{r}
 devtools::load_all(pkg="../test_quantinemo2/RQuantiNemo")
-my_sim = new("simulation",sim.dir = "pop_grow/",parameters=list("generations" = 1000, "patch_capacity" = 1000,"stat" = "{adlt.nbInd}"))
+my_sim.base = new("simulation",sim.dir = "pop_grow/",parameters=list("generations" = 1000, "patch_capacity" = 1000,"stat" = "{adlt.nbInd}"))
 ```
 
 # Population is equal to patch capacity. 
 ```{r}
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",0)
+my_sim = my_sim.base
 my_sim@sim.name <- "constant"
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",0)
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -27,11 +28,12 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 # Test
 stopifnot(tail(my_sim@stat$adlt.nbInd,1)==1000)
 ```
-# Population is constant capacity. 
+# Population remain constant 
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "patch_capacity"
 my_sim <- setParameter(my_sim,"mating_nb_offspring_model",1)
 my_sim <- setParameter(my_sim,"patch_ini_size",500)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -46,10 +48,13 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 stopifnot(tail(my_sim@stat$adlt.nbInd,1)==500)
 ```
 
-# 2 stand for poisson (N*fertility)
+#  Poisson(N*fertility)  
+
  we compare to a (here computed) equivalent simulation. 
  Warning that the population might go extinct... rerun it to have more similar resutl. 
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "Poisson"
 grow.rate = 1.1
 ini.size = 20
 generations = 100
@@ -57,7 +62,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",2)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -76,12 +80,17 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 pop.sim <- tail(my_sim@stat$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 diff <- pop.sim/pop.exp
-stopifnot(diff < grow.rate^20,diff > grow.rate^(-20))
+print(abs(log(pop.sim)-log(pop.exp)))
+stopifnot(abs(log(pop.sim)-log(pop.exp))<1.5)
+
 ```
 
-# 3 stand for round(N*fertility)
+# Round(N*fertility)  
+
 Depending on the initialpopulation size, the population grow or stay constant
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "smooth_fertility"
 grow.rate = 1.051
 ini.size = 9
 generations = 100
@@ -89,7 +98,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",3)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -132,8 +140,12 @@ pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
 
-# 4 stand for round(N*fertility) + binomial(N*fertility)
+# Round(N*fertility) + binomial(N*fertility)  
+
+This type of grow is usefull if we want a faster way to compute the number of offspring, but that because of rounding, the smooth way does not start growing. 
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "smooth_fertility_corrected"
 grow.rate = 1.02
 ini.size = 10
 generations = 100
@@ -141,7 +153,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",4)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -160,11 +171,13 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 pop.sim <- tail(my_sim@stat$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 diff <- pop.sim/pop.exp
-stopifnot(diff < grow.rate^20,diff > grow.rate^(-20))
+stopifnot(abs(log(pop.sim)-log(pop.exp))<0.6)
 ```
 
-# 5 stand for poisson (N*fertility) with a cut at patch_capacity
+# Poisson(N*fertility) with a cut at patch_capacity
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "poisson_cut"
 grow.rate = 1.05
 ini.size = 20
 generations = 200
@@ -172,7 +185,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",5)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -194,8 +206,16 @@ pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
 
-# 6 stand for  (N*fertility) with a cut at patch_capacity
+#(N*fertility) with a cut at patch_capacity
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "smooth_fertility_cut"
+grow.rate = 1.05
+ini.size = 20
+generations = 200
+my_sim <- setParameter(my_sim,"generations",generations)
+my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
+my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
 ini.size = 15
 my_sim <- setParameter(my_sim,"mating_nb_offspring_model",6)
 output <- run(my_sim)
@@ -218,8 +238,11 @@ pop.sim <- tail(my_sim@stat$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
-# 7 stand for  (N*fertility) + binomial and cut
+
+# (N*fertility) + binomial and cut
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "smooth_fertility_corrected_cut"
 grow.rate = 1.05
 ini.size = 10
 generations = 200
@@ -227,7 +250,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",7)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -249,8 +271,10 @@ pop.exp <- tail(pop,1)
 diff <- pop.sim/pop.exp
 stopifnot(diff < grow.rate^20,diff > grow.rate^(-20))
 ```
-# 8 stand for  logistic grow
+# Logistic grow
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "logistic"
 r = 0.5
 ini.size = 2
 generations = 100
@@ -258,7 +282,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",8)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"growth_rate",r)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
@@ -279,8 +302,10 @@ stopifnot(pop[10] ==res[10],pop[100] ==res[100] )
 ```
 
 
-# 9 stand for poisson(logistic grow)
+# Poisson(logistic grow)
 ```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "logistic_poisson"
 r = 0.5
 ini.size = 2
 generations = 100
@@ -288,7 +313,6 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",9)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"growth_rate",r)
-my_sim@sim.name <- "patch_capacity"
 output <- run(my_sim)
 my_sim <- loadStat(my_sim)
 res <- my_sim@stat$adlt.nbInd
