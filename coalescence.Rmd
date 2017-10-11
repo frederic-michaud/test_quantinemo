@@ -1,0 +1,46 @@
+---
+title: "Test the coalescence"
+output:
+  html_document: default
+---
+
+the goal of this notebook is to check wether the coalescence work. We run a simple simulation and print a coalescence tree. 
+This is a minimal approach and should be complemented by other test. 
+
+Open question. Why if we have several patch with no migration, we still have a coalescence tree?
+
+### Loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../test_quantinemo2/RQuantiNemo")
+library(ape)
+my_sim.base = new("simulation",sim.dir = "coalescence/")
+```
+
+
+### Ploting a coalescence tree
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name = "coalescence"
+#general pop
+my_sim  <- setParameter(my_sim,"generations",100)
+my_sim  <- setParameter(my_sim,"patch_capacity",3)
+my_sim  <- setParameter(my_sim,"patch_number",1)
+my_sim  <- setParameter(my_sim,"migration_rate",0)
+my_sim  <- setParameter(my_sim,"migration_model",0)
+my_sim  <- setParameter(my_sim,"coalescence",1)
+
+#neutral marker
+my_sim  <- setParameter(my_sim,"ntrl_loci",10)
+my_sim  <- setParameter(my_sim,"ntrl_all",25)
+my_sim  <- setParameter(my_sim,"ntrl_ini_allele_model",1 )
+
+#output
+my_sim  <- setParameter(my_sim,"coalescence_save_tree",1)
+res <- run(my_sim)
+```
+
+
+```{r}
+tr <- read.nexus(paste(my_sim@sim.directory,my_sim@sim.name,"/simulation.tree",sep=""))
+plot(tr)
+```
