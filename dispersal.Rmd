@@ -1,0 +1,286 @@
+---
+title: "Test of the different population dispersal"
+output:
+  html_document: default
+  html_notebook: default
+---
+The goal of this notebook is to compare expected population grow and displacement with the results given by QN.
+To do so, we first implement some general function to move population arround and add grow, and then we simulate them using QN and compare the result
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+my_sim.base = new("simulation",sim.dir = "dispersal/")
+my_sim.base  <- setParameter(my_sim.base,"generations",75)
+my_sim.base  <- setParameter(my_sim.base,"mating_nb_offspring_model",2)
+my_sim.base  <- setParameter(my_sim.base,"mean_fecundity",1.1)
+my_sim.base  <- setParameter(my_sim.base,"stat","{adlt.nbInd_p }")
+```
+
+### Definition of general function to simulate population dispersal and grow in R
+#### Computing the number of migrant for a given patch
+```{r}
+nMigrantTot <- function(total.rate, n.pop){
+  return(rbinom(1,n.pop,total.rate))
+}
+
+nMigrant <- function(sum.m, m, n.tot.emigr){
+  if (m>0)
+  {
+    if(m/sum.m < 1) p = m/sum.m else p = 1
+  }
+  else{
+    p = 0
+  }
+  return(rbinom(1 ,n.tot.emigr, p))
+}
+
+```
+
+#### Computing the number of migrant from each to every patches
+```{r}
+ComputeEmigr <- function(n.patch, rates, pops){
+  nb.migrant.par =  matrix(rep(0,n.patch^2),nrow = n.patch)
+  for (patch in 1:n.patch){
+    total.rate=sum(rates[patch, ])
+    total.rate <- total.rate - rates[patch, patch]
+    nb.migrant.tot <- nMigrantTot(total.rate, pops[patch])
+    for (patch_migr in 1:n.patch){
+      if (patch_migr == patch) {next}
+      nb.migrant.par[patch, patch_migr]  <- nMigrant(total.rate, rates[patch, patch_migr], nb.migrant.tot)
+      total.rate <- total.rate - rates[patch, patch_migr]
+      nb.migrant.tot <- nb.migrant.tot - nb.migrant.par[patch, patch_migr]
+    }
+  }
+  return(nb.migrant.par)
+}
+```
+
+#### Population grow
+```{r}
+ComputeGrow <- function(pops,grow.rate)
+{
+  return(sapply(pops*grow.rate, rpois, n=1))
+}
+```
+
+### General settings
+```{r}
+n.patch = 12
+n.iter = 75
+ini.pop = 10
+```
+
+
+
+## Result 
+### Migrant Pool island model
+#### Common parameters
+```{r}
+dispersal.rate = 0.2
+```
+#### Quantinemo parts
+```{r}
+my_sim = my_sim.base
+my_sim  <- setParameter(my_sim,"patch_number",12)
+my_sim  <- setParameter(my_sim,"patch_ini_size","{20 0 0 0 0 0 0 0 0 0 0 0}")
+my_sim  <- setParameter(my_sim,"dispersal_model",0)
+my_sim  <- setParameter(my_sim,"replicates",1)
+my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+my_sim@sim.name <- "migrant_pool"
+run(my_sim)
+```
+
+#### R part
+```{r}
+pops=c(20, rep(0, n.patch-1))
+popss <- matrix(rep(pops,n.iter),ncol = n.patch)
+rates = matrix(rep(dispersal.rate/(n.patch-1),n.patch^2),nrow = n.patch)
+diag(rates) = rep(0,n.patch)
+for (i in 1:(n.iter-1)){
+  nb.migrant.par <- ComputeEmigr(n.patch, rates, pops)
+  pops <- pops - colSums(t(nb.migrant.par)) + colSums(nb.migrant.par)
+  pops <- ComputeGrow(pops,1.1)
+  popss[i+1, ] <- pops
+}
+```
+
+#### Ploting result
+The result are very similar. The lines are not perfectly align, which might seems strange, but this is due to fluctuation in the early stage of simulation. In on meta-pop, this compensate due to migration, but on two simulation, the overall population might be larger. 
+
+
+```{r}
+my_sim <- loadStat(my_sim)
+Qn <- my_sim@stat
+plot(popss[, 1], type = "l", log="y",ylim = c(1,10000))
+for (patch in 2:n.patch) {lines(popss[, patch])}
+final.distrib = rep(0,n.patch)
+for (patch in 1:n.patch) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(Qn[[var]],col="red")  
+  final.distrib[patch] = tail(Qn[[var]],1)
+}
+legend("topleft",legend = c("Expected","QuantiNemo"),
+lty=c(1,1), 
+lwd=c(2.5,2.5),
+col=c("black","red"))
+stopifnot(sd(final.distrib) < 150)
+```
+### 1D stepping stone model
+#### Common parameters
+
+
+```{r}
+dispersal.rate = 0.1
+pops = c(10,rep(0,n.patch-1))
+```
+
+#### Quantinemo parts
+```{r}
+pops = c(10,rep(0,n.patch-1))
+my_sim  <- setParameter(my_sim,"dispersal_model",2)
+my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+ini_size = paste("{", paste(pops, collapse = " "),"}")
+my_sim  <- setParameter(my_sim,"patch_ini_size",ini_size)
+my_sim@sim.name <- "1d_stepping_stone"
+res <- run(my_sim)
+```
+#### R parts
+```{r}
+pops = c(10,rep(0,n.patch-1))
+popss <- matrix(rep(pops,n.iter),ncol = n.patch)
+rates = matrix(rep(0, n.patch^2),nrow = n.patch)
+for (i in 1:n.patch){
+  for (j in 1:n.patch){
+    if(abs(i-j)==1) rates[i,j ] = 0.5*dispersal.rate
+  }
+}
+#Torus
+rates[1, n.patch] <- 0.5*dispersal.rate
+rates[n.patch, 1] <- 0.5*dispersal.rate
+diag(rates) = rep(0,n.patch)
+for (i in 1:(n.iter-1)){
+  nb.migrant.par <- ComputeEmigr(n.patch, rates, pops)
+  pops <- pops - colSums(t(nb.migrant.par)) + colSums(nb.migrant.par)
+  pops <- ComputeGrow(pops,1.1)
+  popss[i+1, ] <- pops
+}
+```
+
+
+
+
+#### Ploting result
+The result are very similar. The lines are not perfectly align, which might seems strange, but this is due to fluctuation in the early stage of simulation. In on meta-pop, this compensate due to migration, but on two simulation, the overall population might be larger. 
+```{r}
+my_sim <- loadStat(my_sim)
+Qn <- my_sim@stat
+plot(popss[, 1], type = "l", log="y",ylim = c(1,10000))
+for (patch in 2:n.patch) {lines(popss[, patch])}
+  var = paste("adlt.nbInd_p",formatC(1, width = 2,  flag = "0"),sep="")
+  #plot(Qn[[var]],col="red", ylim = c(0.1,20000), type = "l")  
+  final.distrib = rep(0,n.patch)
+for (patch in 1:n.patch) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(Qn[[var]],col="red")  
+    final.distrib[patch] = tail(Qn[[var]],1)
+}
+  stopifnot(sd(final.distrib)>100)
+  stopifnot(sd(final.distrib)<3000)
+```
+
+
+### 2d stepping stone
+####QuantiNemo part
+```{r}
+my_sim  <- setParameter(my_sim,"dispersal_model",3)
+my_sim  <- setParameter(my_sim,"generations",50)
+
+my_sim  <- setParameter(my_sim,"dispersal_lattice_range",0)
+my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+ini_size = paste("{", paste(pops, collapse = " "),"}")
+my_sim  <- setParameter(my_sim,"patch_ini_size","{10 0 0 0 0 0 0 0 0 0 0 0}")
+my_sim  <- setParameter(my_sim,"replicates",100)
+my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
+my_sim@sim.name <- "2d_stepping_stone_4"
+writeInput(my_sim)
+run(my_sim)
+```
+We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the four first neighboor are occupied and then the five next and finaly the two last patch. Increasing the number of replicates, we can see the structure arrising from the broken rotationnal symmetry of the lattice. 
+```{r}
+my_sim <- loadStat(my_sim)
+Qn <- my_sim@stat
+final.distrib = rep(0,n.patch)
+
+plot( Qn[["adlt.nbInd_p01"]],col="red", log="y",ylim=c(0.1,1000),type="l",ylab = "Population size", xlab = "Generation")
+for (patch in 2:n.patch) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(Qn[[var]],col="red")  
+    final.distrib[patch] = tail(Qn[[var]],1)
+}
+```
+
+### 2d stepping stone with 8 neighbor
+####QuantiNemo part
+```{r}
+my_sim  <- setParameter(my_sim,"dispersal_model",3)
+my_sim  <- setParameter(my_sim,"generations",50)
+my_sim  <- setParameter(my_sim,"dispersal_lattice_range",1)
+my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+ini_size = paste("{", paste(pops, collapse = " "),"}")
+my_sim  <- setParameter(my_sim,"patch_ini_size","{10 0 0 0 0 0 0 0 0 0 0 0}")
+my_sim  <- setParameter(my_sim,"replicates",100)
+my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
+my_sim@sim.name <- "2d_stepping_stone_8"
+writeInput(my_sim)
+run(my_sim)
+```
+We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the eight first neighboor are occupied and then the three last patch. 
+```{r}
+my_sim <- loadStat(my_sim)
+Qn <- my_sim@stat
+final.distrib = rep(0,n.patch)
+
+plot( Qn[["adlt.nbInd_p01"]],col="red", log="y",ylim=c(0.1,1000),type="l",ylab = "Population size", xlab = "Generation")
+for (patch in 2:n.patch) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(Qn[[var]],col="red")  
+    final.distrib[patch] = tail(Qn[[var]],1)
+}
+```
+
+### Long range dispersal  
+
+Si on ne met pas de dispersal_rate, la population reste toujours sur le même patch, quelque soit la valeur de dispoersal_long_range_coef
+Si on met un dispersal_rate, la population décroit (p-e en m^g?) car la population ne reste pas sur les patchs. 
+Si on met un dispersal_rate = 1, ça semble fonctionner un peu mieux. Néanmoins, la pop disparait quand même.  
+```{r}
+my_sim = new("simulation",sim.dir = "dispersal/")
+my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",2)
+my_sim  <- setParameter(my_sim,"mean_fecundity",1.01)
+my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd_p }")
+my_sim  <- setParameter(my_sim,"dispersal_model",4)
+my_sim  <- setParameter(my_sim,"patch_capacity",1000)
+my_sim  <- setParameter(my_sim,"generations",100)
+my_sim  <- setParameter(my_sim,"dispersal_rate",1)
+my_sim  <- setParameter(my_sim,"dispersal_long_range_coef",0.1)
+my_sim  <- setParameter(my_sim,"patch_ini_size","{rep(0,464) 1000 rep(0,435)}")
+my_sim  <- setParameter(my_sim,"patch_number",900)
+my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{30 30}")
+my_sim@sim.name <- "long_range"
+run(my_sim, verbose=F)
+```
+```{r}
+my_sim <- loadStat(my_sim)
+Qn <- my_sim@stat
+pop <- Qn[, 3:902]
+pop <- as.matrix(pop)
+rowSums(pop)
+```
+```{r}
+pop[1, 460:470]
+pop[2, 460:470]
+pop[3, 460:470]
+```
+
+
