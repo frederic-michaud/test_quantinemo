@@ -1,0 +1,103 @@
+---
+title: "Testing the femal sex allocation"
+output:
+  html_document: default
+---
+
+This notebook test the femal sex allocation. If we have a trait which give us the fem_sex_allocation, we expect this trait to converge toward 0.5. We observe a very slight difference, but not as big as what is expected. Why?
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+my_sim.base = new("simulation",sim.dir = "female_sex_allocation/")
+```
+
+```{r}
+n.iter = 500
+patch.capacity = 100
+```
+
+
+```{r}
+my_sim.base  <- setParameter(my_sim.base,"generations",n.iter)
+my_sim.base  <- setParameter(my_sim.base,"replicates",100)
+my_sim.base  <- setParameter(my_sim.base,"patch_capacity",patch.capacity)
+my_sim.base  <- setParameter(my_sim.base,"stat","{adlt.nbInd q.meanG_p}")
+my_sim.base  <- setParameter(my_sim.base,"mating_nb_offspring_model",0)
+my_sim.base  <- setParameter(my_sim.base,"fem_sex_allocation","Z1")
+allele = data.frame("col_locus" = rep(1,255), "col_allele" = seq(1,255,1), "col_allelic_value" = seq(0,0.5,length.out = 255))
+my_sim.base  <- addFile(my_sim.base,"quanti_allelic_file",allele)
+my_sim.base  <- setParameter(my_sim.base,"quanti_loci",1)
+my_sim.base  <- setParameter(my_sim.base,"quanti_mutation_rate",0.0001)
+my_sim.base  <- setParameter(my_sim.base,"quanti_all",255)
+my_sim.base  <- setParameter(my_sim.base,"patch_ini_size",patch.capacity)
+```
+
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "q"
+run(my_sim,verbose = F)
+```
+
+##Result
+### Extinction without any repopulation
+#### Launching simulation
+
+```{r}
+stat <- loadStatRep(my_sim)
+stat.rep <- stat$q.meanG[stat$replicate == 1]
+n.rep = max(stat$replicate)
+plot(stat.rep, type="l",ylim=c(0,1))
+final.q <- rep(tail(stat.rep,1),n.rep)
+for(i in 2:n.rep){
+  stat.rep <- stat$q.meanG[stat$replicate == i]
+  lines(stat.rep, type="l")
+  final.q[i] <- tail(stat.rep,1)
+}
+hist(final.q,20)
+```
+
+### Same simulation but without the fem_sex_allocation
+
+```{r}
+my_sim.base = new("simulation",sim.dir = "female_sex_allocation/")
+my_sim.base@sim.name <- "ntrl"
+my_sim.base  <- setParameter(my_sim.base,"generations",n.iter)
+my_sim.base  <- setParameter(my_sim.base,"replicates",100)
+my_sim.base  <- setParameter(my_sim.base,"patch_capacity",patch.capacity)
+my_sim.base  <- setParameter(my_sim.base,"stat","{adlt.nbInd q.meanG_p}")
+my_sim.base  <- setParameter(my_sim.base,"mating_nb_offspring_model",0)
+allele = data.frame("col_locus" = rep(1,255), "col_allele" = seq(1,255,1), "col_allelic_value" = seq(0,0.5,length.out = 255))
+my_sim.base  <- addFile(my_sim.base,"quanti_allelic_file",allele)
+my_sim.base  <- setParameter(my_sim.base,"quanti_loci",1)
+my_sim.base  <- setParameter(my_sim.base,"quanti_mutation_rate",0.000001)
+my_sim.base  <- setParameter(my_sim.base,"quanti_all",255)
+my_sim.base  <- setParameter(my_sim.base,"patch_ini_size",patch.capacity)
+```
+
+```{r}
+my_sim = my_sim.base
+run(my_sim,verbose = F)
+```
+
+
+```{r}
+my_sim = my_sim.base
+stat = loadStatRep(my_sim)
+stat.rep <- stat$q.meanG[stat$replicate == 1]
+n.rep = max(stat$replicate)
+plot(stat.rep, type="l",ylim=c(0,1))
+final.ntrl <- rep(tail(stat.rep,1),n.rep)
+for(i in 2:n.rep){
+  stat.rep <- stat$q.meanG[stat$replicate == i]
+  lines(stat.rep, type="l")
+  final.ntrl[i] <- tail(stat.rep,1)
+}
+hist(final.ntrl,20)
+```
+
+```{r}
+res = chisq.test(final.ntrl, final.q)
+stopifnot(res$p.value <0.01)
+```
+
