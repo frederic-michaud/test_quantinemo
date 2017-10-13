@@ -36,7 +36,7 @@ my_sim  <- setParameter(my_sim,"ntrl_ini_allele_model",1 )
 
 #output
 my_sim  <- setParameter(my_sim,"coalescence_save_tree",1)
-res <- run(my_sim)
+res <- run(my_sim, verbose = FALSE)
 ```
 
 

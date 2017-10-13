@@ -26,7 +26,7 @@ my_sim <- setParameter(my_sim,"quanti_save_phenotype ",2)
 
 for(prop in seq(0,1,0.1)){
   my_sim <- setParameter(my_sim,"mating_proportion",prop)
-  success <- run(my_sim)
+  success <- run(my_sim, verbose = FALSE)
   stopifnot(success=TRUE)
   Pheno <- loadPheno(my_sim)
   prop.q <- sum(as.character(Pheno$V7)=="NaN")/length(Pheno$V7)

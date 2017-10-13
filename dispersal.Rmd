@@ -88,7 +88,7 @@ my_sim  <- setParameter(my_sim,"dispersal_model",0)
 my_sim  <- setParameter(my_sim,"replicates",1)
 my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
 my_sim@sim.name <- "migrant_pool"
-run(my_sim)
+run(my_sim, verbose = FALSE)
 ```
 
 #### R part
@@ -110,8 +110,7 @@ The result are very similar. The lines are not perfectly align, which might seem
 
 
 ```{r}
-my_sim <- loadStat(my_sim)
-Qn <- my_sim@stat
+Qn  <- loadStat(my_sim)
 plot(popss[, 1], type = "l", log="y",ylim = c(1,10000))
 for (patch in 2:n.patch) {lines(popss[, patch])}
 final.distrib = rep(0,n.patch)
@@ -143,7 +142,7 @@ my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
 ini_size = paste("{", paste(pops, collapse = " "),"}")
 my_sim  <- setParameter(my_sim,"patch_ini_size",ini_size)
 my_sim@sim.name <- "1d_stepping_stone"
-res <- run(my_sim)
+res <- run(my_sim, verbose = FALSE)
 ```
 #### R parts
 ```{r}
@@ -173,8 +172,7 @@ for (i in 1:(n.iter-1)){
 #### Ploting result
 The result are very similar. The lines are not perfectly align, which might seems strange, but this is due to fluctuation in the early stage of simulation. In on meta-pop, this compensate due to migration, but on two simulation, the overall population might be larger. 
 ```{r}
-my_sim <- loadStat(my_sim)
-Qn <- my_sim@stat
+Qn  <- loadStat(my_sim)
 plot(popss[, 1], type = "l", log="y",ylim = c(1,10000))
 for (patch in 2:n.patch) {lines(popss[, patch])}
   var = paste("adlt.nbInd_p",formatC(1, width = 2,  flag = "0"),sep="")
@@ -204,12 +202,11 @@ my_sim  <- setParameter(my_sim,"replicates",100)
 my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
 my_sim@sim.name <- "2d_stepping_stone_4"
 writeInput(my_sim)
-run(my_sim)
+run(my_sim, verbose = FALSE)
 ```
 We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the four first neighboor are occupied and then the five next and finaly the two last patch. Increasing the number of replicates, we can see the structure arrising from the broken rotationnal symmetry of the lattice. 
 ```{r}
-my_sim <- loadStat(my_sim)
-Qn <- my_sim@stat
+Qn  <- loadStat(my_sim)
 final.distrib = rep(0,n.patch)
 
 plot( Qn[["adlt.nbInd_p01"]],col="red", log="y",ylim=c(0.1,1000),type="l",ylab = "Population size", xlab = "Generation")
@@ -233,12 +230,11 @@ my_sim  <- setParameter(my_sim,"replicates",100)
 my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
 my_sim@sim.name <- "2d_stepping_stone_8"
 writeInput(my_sim)
-run(my_sim)
+run(my_sim, verbose = FALSE)
 ```
 We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the eight first neighboor are occupied and then the three last patch. 
 ```{r}
-my_sim <- loadStat(my_sim)
-Qn <- my_sim@stat
+Qn  <- loadStat(my_sim)
 final.distrib = rep(0,n.patch)
 
 plot( Qn[["adlt.nbInd_p01"]],col="red", log="y",ylim=c(0.1,1000),type="l",ylab = "Population size", xlab = "Generation")
