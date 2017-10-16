@@ -1,6 +1,5 @@
 ---
 title: "Launching all test"
-output: html_notebook
 ---
 
 ### Defining components
@@ -10,16 +9,16 @@ components = c("cloning","coalescence", "dispersal", "population_grow", "extinct
 
 
 
+
 ###Cleaning all files
 ```{r}
-paste("-R ", paste(components))
-
-#system2("r,",paste("-R ")
+system2("rm",paste("-R ", paste(paste(components,"/", sep = ""), collapse = " ")))
+system2("rm",paste("-R ", paste(paste(components,"_files","/", sep = ""), collapse = " ")))
+system2("rm","output.log")
 ```
 
-###Launching the test
+###Launching the test  new Version
 ```{r}
-
 for(component in components){
   res <- try(rmarkdown::render(paste(component,".Rmd", sep=""),quiet = TRUE),silent=TRUE)
   if(class(res)=="try-error"){
@@ -33,5 +32,4 @@ for(component in components){
   }
 }
 ```
-
 

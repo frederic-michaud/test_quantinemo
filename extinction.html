@@ -157,7 +157,7 @@ success &lt;- run(my_sim, verbose = FALSE)</code></pre>
 Qn &lt;- as.matrix(Qn[-1, 3:102])
 computed.rate = sum(Qn ==0)/length(Qn)
 print(computed.rate)</code></pre>
-<pre><code>## [1] 0.04977978</code></pre>
+<pre><code>## [1] 0.04845846</code></pre>
 <pre class="r"><code>stopifnot(sum(Qn ==0) &gt; qbinom(0.005,999*100,0.05))
 stopifnot(sum(Qn ==0) &lt; qbinom(0.995,999*100,0.05))</code></pre>
 </div>
@@ -180,7 +180,7 @@ success &lt;- run(my_sim, verbose = FALSE)</code></pre>
 Qn &lt;- as.matrix(Qn[-1, 3:102])
 computed.rate = sum(Qn ==10)/length(Qn)
 print(computed.rate)</code></pre>
-<pre><code>## [1] 0.04987988</code></pre>
+<pre><code>## [1] 0.04843844</code></pre>
 <pre class="r"><code>stopifnot(sum(Qn == 10) &gt; qbinom(0.005,999*100,0.05))
 stopifnot(sum(Qn == 10) &lt; qbinom(0.995,999*100,0.05))</code></pre>
 </div>
@@ -204,7 +204,7 @@ Qn &lt;- as.matrix(Qn[-1, 3:102])
 sum.pos &lt;-  sum(Qn &lt; 10 )
 computed.rate = sum.pos/length(Qn)
 print(computed.rate)</code></pre>
-<pre><code>## [1] 0.04931932</code></pre>
+<pre><code>## [1] 0.04834835</code></pre>
 <pre class="r"><code>stopifnot(sum.pos &gt; qbinom(0.005,999*100,0.05))
 stopifnot(sum.pos &lt; qbinom(0.995,999*100,0.05))</code></pre>
 </div>

@@ -2,7 +2,6 @@
 title: "Test of the different population dispersal"
 output:
   html_document: default
-  html_notebook: default
 ---
 The goal of this notebook is to compare expected population grow and displacement with the results given by QN.
 To do so, we first implement some general function to move population arround and add grow, and then we simulate them using QN and compare the result
@@ -131,12 +130,11 @@ stopifnot(sd(final.distrib) < 150)
 
 ```{r}
 dispersal.rate = 0.1
-pops = c(10,rep(0,n.patch-1))
+pops = c(15,rep(0,n.patch-1))
 ```
 
 #### Quantinemo parts
 ```{r}
-pops = c(10,rep(0,n.patch-1))
 my_sim  <- setParameter(my_sim,"dispersal_model",2)
 my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
 ini_size = paste("{", paste(pops, collapse = " "),"}")
@@ -146,7 +144,9 @@ res <- run(my_sim, verbose = FALSE)
 ```
 #### R parts
 ```{r}
-pops = c(10,rep(0,n.patch-1))
+#num <- numeric(100)
+#for (k in 1:100){
+pops = c(15,rep(0,n.patch-1))
 popss <- matrix(rep(pops,n.iter),ncol = n.patch)
 rates = matrix(rep(0, n.patch^2),nrow = n.patch)
 for (i in 1:n.patch){
@@ -164,6 +164,8 @@ for (i in 1:(n.iter-1)){
   pops <- ComputeGrow(pops,1.1)
   popss[i+1, ] <- pops
 }
+#num[k] <- sd(pops)
+#}
 ```
 
 
@@ -183,8 +185,8 @@ for (patch in 1:n.patch) {
   lines(Qn[[var]],col="red")  
     final.distrib[patch] = tail(Qn[[var]],1)
 }
-  stopifnot(sd(final.distrib)>100)
-  stopifnot(sd(final.distrib)<3000)
+  stopifnot(sd(final.distrib)>20) #Testing with the R version, it's a cut at about 5%
+  stopifnot(sd(final.distrib)<2500) #Testing with the R version, it's a cut at about 5%
 ```
 
 
@@ -267,8 +269,7 @@ my_sim@sim.name <- "long_range"
 run(my_sim, verbose=F)
 ```
 ```{r}
-my_sim <- loadStat(my_sim)
-Qn <- my_sim@stat
+Qn  <- loadStat(my_sim)
 pop <- Qn[, 3:902]
 pop <- as.matrix(pop)
 rowSums(pop)

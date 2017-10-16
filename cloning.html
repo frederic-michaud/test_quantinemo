@@ -139,7 +139,7 @@ my_sim &lt;- setParameter(my_sim,&quot;quanti_save_phenotype &quot;,2)
 
 for(prop in seq(0,1,0.1)){
   my_sim &lt;- setParameter(my_sim,&quot;mating_proportion&quot;,prop)
-  success &lt;- run(my_sim)
+  success &lt;- run(my_sim, verbose = FALSE)
   stopifnot(success=TRUE)
   Pheno &lt;- loadPheno(my_sim)
   prop.q &lt;- sum(as.character(Pheno$V7)==&quot;NaN&quot;)/length(Pheno$V7)
@@ -154,7 +154,7 @@ for(prop in seq(0,1,0.1)){
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.1 
-##  QuantiNemo:  0.104 
+##  QuantiNemo:  0.084 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
@@ -164,37 +164,37 @@ for(prop in seq(0,1,0.1)){
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.3 
-##  QuantiNemo:  0.322 
+##  QuantiNemo:  0.296 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.4 
-##  QuantiNemo:  0.386 
+##  QuantiNemo:  0.402 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.5 
-##  QuantiNemo:  0.503 
+##  QuantiNemo:  0.475 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.6 
-##  QuantiNemo:  0.586 
+##  QuantiNemo:  0.584 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.7 
-##  QuantiNemo:  0.701 
+##  QuantiNemo:  0.7 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.8 
-##  QuantiNemo:  0.781 
+##  QuantiNemo:  0.792 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
 <pre><code>## expected:  0.9 
-##  QuantiNemo:  0.891 
+##  QuantiNemo:  0.907 
 ## </code></pre>
 <pre><code>## printing into :cloning/my_simulation.ini
 ## excuting /Users/frederic/Desktop/RQuantiNemo/quantiNemo2 cloning/my_simulation.ini</code></pre>
