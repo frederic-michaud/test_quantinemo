@@ -1,0 +1,37 @@
+---
+title: "Launching all test"
+output: html_notebook
+---
+
+### Defining components
+```{r}
+components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape")
+```
+
+
+
+###Cleaning all files
+```{r}
+paste("-R ", paste(components))
+
+#system2("r,",paste("-R ")
+```
+
+###Launching the test
+```{r}
+
+for(component in components){
+  res <- try(rmarkdown::render(paste(component,".Rmd", sep=""),quiet = TRUE),silent=TRUE)
+  if(class(res)=="try-error"){
+    cat(rep("#",50))
+    cat(paste("\nSomething went wrong in the component: ",component,"\n", sep=""))
+    cat(res[1])
+    cat(rep("#",50), "\n \n")
+  }
+  else{
+      cat(paste("Component: ",component," passed test \n\n", sep=""))
+  }
+}
+```
+
+
