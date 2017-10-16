@@ -1,0 +1,102 @@
+---
+title: "Testing fitness factor for heterozygote and homozygote"
+output:
+  html_document: default
+---
+
+This notebook test what happen if we use the fitness factor (which allow to translate directly a genotype into a fitness) and in particular the option to advantage homozygote or heterozygote. 
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+```
+
+
+```{r}
+parameters = list("generations" = 2000,
+                  "patch_capacity" = 50,
+                  "replicates" = 10,
+                  "quanti_loci" = 1,
+                  "quanti_all" = 255,
+                  "stat" ="{q.adlt.nbAll q.adlt.ho q.adlt.hs q.meanG_p}"
+                  )
+my_sim.base = new("simulation", "sim.dir" = "fitness_factor/", "parameters" = parameters)
+```
+
+##Result
+### Playing with the heterozygote part. 
+#### Launching the simulation, neutral part
+
+In a time (2.77 + eps)*N , a single allele should be fixed. Sincce 2000 >> 3*50, we expect all allele to be fixed by the end of the simulation. 
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name = "ntrl"
+success <- run(my_sim, verbose = FALSE)
+```
+#### Neutral result
+```{r}
+stats  <- loadStat(my_sim)
+plot(stats$q.adlt.nbAll, log = "y", type = "l", ylab = "Nb. Allele", xlab = "generation", main = "Evolution of the number of allele")
+stopifnot(tail(stats$q.adlt.nbAll,1) ==1)
+```
+#### Launching the simulation in favor of Heterozygote   
+We should remain with at least two allele until the end (waiting a very very long time, we might have only on allele, but it's very unlikely). 
+
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name = "pro_hetero"
+my_sim <- setParameter(my_sim, "quanti_fitness_factor_heterozygote", 2)
+run(my_sim, verbose = FALSE)
+```
+
+```{r}
+stats  <- loadStat(my_sim)
+plot(stats$q.adlt.nbAll, log = "y", type = "l",ylim = c(1,5), ylab = "Nb. Allele", xlab = "generation", main = "Evolution of the number of allele")
+stopifnot(tail(stats$q.adlt.nbAll,1) >= 2)
+```
+#### Launching the simulation in disfavor of Heterozygote    
+The convergence time to a single allele should be very fast. 
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name = "anti_hetero"
+my_sim <- setParameter(my_sim, "quanti_fitness_factor_heterozygote", 0)
+run(my_sim, verbose = FALSE)
+```
+
+```{r}
+stats  <- loadStat(my_sim)
+plot(stats$q.adlt.nbAll, log = "y", type = "l",ylim = c(1,25), xlim = c(1,20), ylab = "Nb. Allele", xlab = "generation", main = "Evolution of the number of allele")
+stopifnot((stats$q.adlt.nbAll)[20] == 1)
+```
+
+### Playing with the homozygote part. 
+
+#### Launching the simulation in favor of homozygote   
+
+The convergence time to a single allele should be very quick 
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name = "pro_homo"
+my_sim <- setParameter(my_sim, "quanti_fitness_factor_homozygote", 2)
+run(my_sim, verbose = FALSE)
+```
+
+```{r}
+stats  <- loadStat(my_sim)
+plot(stats$q.adlt.nbAll, log = "y", type = "l",ylim = c(1,25), xlim = c(1,50), ylab = "Nb. Allele", xlab = "generation", main = "Evolution of the number of allele")
+stopifnot((stats$q.adlt.nbAll)[50] == 1)
+```
+#### Launching the simulation in disfavor of homozygothe    
+We should remain with at least two allele until the end (waiting a very very long time, we might have only on allele, but it's very unlikely). 
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name = "anti_homo"
+my_sim <- setParameter(my_sim, "quanti_fitness_factor_homozygote", 0)
+run(my_sim, verbose = FALSE)
+```
+
+```{r}
+stats  <- loadStat(my_sim)
+plot(stats$q.adlt.nbAll, log = "y", type = "l",ylim = c(1,25), ylab = "Nb. Allele", xlab = "generation", main = "Evolution of the number of allele")
+stopifnot(tail(stats$q.adlt.nbAll,1) >= 2)
+```
