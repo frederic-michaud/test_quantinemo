@@ -1,0 +1,103 @@
+---
+title: "Test of the friction factor"
+output:
+  html_document: default
+---
+The goal of this notebook is to check if the friction factor is working well.
+To do so, we consider a island model, and we set a friction coefficient to some iceland. 
+If we have a friction larger than one, the number of individuals on this island shoud decrease. 
+If it's superior to one, it should increase. This can be compared to analytical results. 
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list("generations" = 100,
+                  "patch_capacity" = 100,
+                  "patch_number" = 20,                  
+                  "mating_nb_offspring_model" = 1,
+                  "dispersal_model" = 0,
+                  "dispersal_rate" = 0.1,
+                  "replicates" = 25,
+                  "stat" = "{adlt.nbInd_p}")
+my_sim.base = new("simulation",sim.dir = "friction/", parameters = parameters)
+```
+
+
+
+## Result 
+### No dispersal factor
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "no_friction"
+success <- run(my_sim, verbose = FALSE)
+```
+#### Ploting result
+```{r}
+stat <- loadStat(my_sim)
+plot(stat$adlt.nbInd_p01, main = "Evolution of the number of individual", ylab = "Nb of individual", xlab = "generations", ylim = c(90,110), type = "l")
+for (patch in 1:20) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(stat[[var]])  
+}
+```
+
+### All dispersal factor set to 1
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "1_friction"
+my_sim <- setParameter(my_sim, "patch_friction", "{rep(1,12)}")
+success <- run(my_sim, verbose = FALSE)
+```
+#### Ploting result
+```{r}
+stat <- loadStat(my_sim)
+plot(stat$adlt.nbInd_p01, main = "Evolution of the number of individual", ylab = "Nb of individual", xlab = "generations", ylim = c(90,110), type = "l")
+for (patch in 1:20) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(stat[[var]])  
+}
+```
+
+
+### two dispersal factor set to 0.
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "0_friction"
+my_sim <- setParameter(my_sim, "patch_friction", "{0 0 rep(1,10)}")
+success <- run(my_sim, verbose = FALSE)
+```
+#### Ploting result
+```{r}
+stat <- loadStat(my_sim)
+plot(stat$adlt.nbInd_p01, main = "Evolution of the number of individual", ylab = "Nb of individual", xlab = "generations", ylim = c(90,110), type = "l")
+for (patch in 1:20) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(stat[[var]])  
+}
+stopifnot(tail(stat$adlt.nbInd_p01) > 200)
+```
+
+
+
+
+### two dispersal factor set to 2.
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "2_friction"
+my_sim <- setParameter(my_sim, "patch_friction", "{2 2 rep(1,10)}")
+success <- run(my_sim, verbose = FALSE)
+```
+#### Ploting result
+```{r}
+stat <- loadStat(my_sim)
+plot(stat$adlt.nbInd_p01, main = "Evolution of the number of individual", ylab = "Nb of individual", xlab = "generations", ylim = c(90,110), type = "l")
+for (patch in 1:20) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
+  lines(stat[[var]])  
+}
+stopifnot(tail(stat$adlt.nbInd_p01) == 0 )
+```
