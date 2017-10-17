@@ -49,6 +49,13 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 # Test
 stopifnot(tail(stats$adlt.nbInd,1)==500)
 ```
+#  Poisson(N*fertility)  
+```{r}
+grow.rate = 1.08
+ini.size = 30
+generations = 100
+```
+
 ```{r}
 pop <-  numeric(length=generations)
 pop[1]=ini.size
@@ -56,19 +63,15 @@ for (i in 2:generations)
 {
   pop[i] <-  rpois(1,pop[i-1]*grow.rate)
 }
-plot(pop,xlim = c(0,generations),ylim = c(5,10*grow.rate^generations),log = "y", t = "l")
 ```
 
-#  Poisson(N*fertility)  
 
  we compare to a (here computed) equivalent simulation. 
  Warning that the population might go extinct... rerun it to have more similar resutl. 
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "Poisson"
-grow.rate = 1.1
-ini.size = 20
-generations = 100
+
 my_sim <- setParameter(my_sim,"mating_nb_offspring_model",2)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
@@ -291,7 +294,7 @@ stopifnot(pop[10] ==res[10],pop[100] ==res[100] )
 my_sim = my_sim.base
 my_sim@sim.name <- "logistic_poisson"
 r = 0.5
-ini.size = 2
+ini.size = 5
 generations = 100
 my_sim <- setParameter(my_sim,"mating_nb_offspring_model",7)
 my_sim <- setParameter(my_sim,"generations",generations)
@@ -313,6 +316,6 @@ legend("topleft",legend = c("Expected","QuantiNemo"),
 lty=c(1,1), # gives the legend appropriate symbols (lines)
 lwd=c(2.5,2.5),
 col=c("blue","red")) # gives the legend lines the correct color and width
-stopifnot(sd(pop-res)<100)
+stopifnot(sd(pop-res)<150)
 ```
 
