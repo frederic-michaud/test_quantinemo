@@ -4,7 +4,10 @@ title: "Launching all test"
 
 ### Defining components
 ```{r}
-components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape")
+components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape", "friction")
+working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape")
+not.working.components = c("female_sex_allocation",  "friction")
+
 ```
 
 
@@ -17,9 +20,9 @@ system2("rm",paste("-R ", paste(paste(components,"_files","/", sep = ""), collap
 system2("rm","output.log")
 ```
 
-###Launching the test  new Version
+###function to test a component
 ```{r}
-for(component in components){
+test <- function(component){
   res <- try(rmarkdown::render(paste(component,".Rmd", sep=""),quiet = TRUE),silent=TRUE)
   if(class(res)=="try-error"){
     cat(rep("#",50))
@@ -32,4 +35,14 @@ for(component in components){
   }
 }
 ```
+
+
+###Launching the test 
+```{r}
+for(component in working.components){
+  test(component)
+}
+
+```
+
 
