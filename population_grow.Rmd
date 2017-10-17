@@ -49,6 +49,15 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 # Test
 stopifnot(tail(stats$adlt.nbInd,1)==500)
 ```
+```{r}
+pop <-  numeric(length=generations)
+pop[1]=ini.size
+for (i in 2:generations)
+{
+  pop[i] <-  rpois(1,pop[i-1]*grow.rate)
+}
+plot(pop,xlim = c(0,generations),ylim = c(5,10*grow.rate^generations),log = "y", t = "l")
+```
 
 #  Poisson(N*fertility)  
 
@@ -67,24 +76,32 @@ my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
-pop <-  numeric(length=generations)
-pop[1]=ini.size
-for (i in 2:generations)
-{
-  pop[i] <-  rpois(1,pop[i-1]*grow.rate)
-}
+
 plot(res,xlim = c(0,generations),ylim = c(5,10*grow.rate^generations),xlab = "generation",ylab = "Population size",main = "Evolution of the population size",log="y",type = "l",col="red")
 lines(pop,col="blue")
 legend("topleft",legend = c("Expected","QuantiNemo"),
 lty=c(1,1), # gives the legend appropriate symbols (lines)
 lwd=c(2.5,2.5),
 col=c("blue","red")) # gives the legend lines the correct color and width
-pop.sim <- tail(stats$adlt.nbInd,1)
-pop.exp <- tail(pop,1)
-diff <- pop.sim/pop.exp
-print(abs(log(pop.sim)-log(pop.exp)))
-stopifnot(abs(log(pop.sim)-log(pop.exp))<1.5)
+```
 
+```{r}
+n.replicate = 40
+pops = matrix(0, nrow = n.replicate, ncol = generations)
+for(kk in 1:n.replicate){
+  pop <-  numeric(length=generations)
+  pop[1]=ini.size
+  for (i in 2:generations)
+  {
+    pop[i] <-  rpois(1,pop[i-1]*grow.rate)
+  }
+  pops[kk, ] <- pop
+}
+pop.sim <- tail(stats$adlt.nbInd,1)
+pops.final = pops[, generations]
+#both test should fail about 1/40 (1/n.replicate) i.e 2.5 % of the time. We have therefore 5% chance to fail the test. 
+stopifnot(min(pops.final) < pop.sim)
+stopifnot(max(pops.final) > pop.sim)
 ```
 
 # Round(N*fertility)  
@@ -141,41 +158,6 @@ pop.sim <- tail(stats$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
-
-# Round(N*fertility) + binomial(N*fertility)  
-
-This type of grow is usefull if we want a faster way to compute the number of offspring, but that because of rounding, the smooth way does not start growing. 
-```{r}
-my_sim = my_sim.base
-my_sim@sim.name <- "smooth_fertility_corrected"
-grow.rate = 1.02
-ini.size = 10
-generations = 100
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",4)
-my_sim <- setParameter(my_sim,"generations",generations)
-my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
-my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
-output <- run(my_sim, verbose = FALSE)
-stats<- loadStat(my_sim)
-res <- stats$adlt.nbInd
-pop <-  numeric(length=generations)
-pop[1]=ini.size
-for (i in 2:generations)
-{
-  pop[i] <-  floor(grow.rate*pop[i-1]) + rbinom(1,1,(pop[i-1]*grow.rate - as.integer(pop[i-1]*grow.rate)))
-}
-plot(res,xlim = c(0,generations),ylim = c(5,10*grow.rate^generations),xlab = "generation",ylab = "Population size",main = "Evolution of the population size",log="y",type = "l",col="red")
-lines(pop,col="blue")
-legend("topleft",legend = c("Expected","QuantiNemo"),
-lty=c(1,1), # gives the legend appropriate symbols (lines)
-lwd=c(2.5,2.5),
-col=c("blue","red")) # gives the legend lines the correct color and width
-pop.sim <- tail(stats$adlt.nbInd,1)
-pop.exp <- tail(pop,1)
-diff <- pop.sim/pop.exp
-stopifnot(abs(log(pop.sim)-log(pop.exp))<0.6)
-```
-
 # Poisson(N*fertility) with a cut at patch_capacity
 ```{r}
 my_sim = my_sim.base
@@ -183,7 +165,7 @@ my_sim@sim.name <- "poisson_cut"
 grow.rate = 1.05
 ini.size = 20
 generations = 200
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",5)
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",4)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
@@ -219,7 +201,7 @@ my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
 ini.size = 15
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",6)
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",5)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
@@ -248,7 +230,7 @@ my_sim@sim.name <- "smooth_fertility_corrected_cut"
 grow.rate = 1.05
 ini.size = 10
 generations = 200
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",7)
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",5)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
@@ -280,7 +262,7 @@ my_sim@sim.name <- "logistic"
 r = 0.5
 ini.size = 2
 generations = 100
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",8)
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",6)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"growth_rate",r)
@@ -311,7 +293,7 @@ my_sim@sim.name <- "logistic_poisson"
 r = 0.5
 ini.size = 2
 generations = 100
-my_sim <- setParameter(my_sim,"mating_nb_offspring_model",9)
+my_sim <- setParameter(my_sim,"mating_nb_offspring_model",7)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"growth_rate",r)
@@ -331,6 +313,6 @@ legend("topleft",legend = c("Expected","QuantiNemo"),
 lty=c(1,1), # gives the legend appropriate symbols (lines)
 lwd=c(2.5,2.5),
 col=c("blue","red")) # gives the legend lines the correct color and width
-stopifnot(TRUE)
+stopifnot(sd(pop-res)<100)
 ```
 
