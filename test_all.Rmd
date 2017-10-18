@@ -4,8 +4,8 @@ title: "Launching all test"
 
 ### Defining components
 ```{r}
-components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape", "friction")
-working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape")
+components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape", "friction", "macro")
+working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination")
 not.working.components = c("female_sex_allocation",  "friction", "macro")
 ```
 

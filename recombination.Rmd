@@ -1,0 +1,114 @@
+---
+title: "Recombination factor"
+output:
+  html_document: default
+---
+In this notebook, test the recombination factor, i.e. the possibility to strech or reduce the size of the genome so that we have more or less recombination. 
+To do so, we put twice the same genotype on close trait, and see if they are recombined at the right frequency in the following generations. 
+
+
+##loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+patch.capacity <- 2000
+recombinationRate <- function(distance){(1-exp(-2*distance/100))/2}
+parameters = list("generations" = 2, 
+                  "patch_capacity" = patch.capacity,
+                  "ntrl_genome" = " {0 10}",
+                  "ntrl_loci" = 2,
+                  "ntrl_all" = 2,
+                  "ntrl_locus_index" = "{1 2}",
+                  "ntrl_save_genotype" =  1
+)
+my_sim.base = new("simulation",sim.dir = "recombination/",parameters=parameters)
+ini.gene = sample("12",patch.capacity,replace=TRUE)
+my_sim.base <- addFile(my_sim.base, "ntrl_ini_genotypes", data.frame("c1" = rep(1,patch.capacity),"c2" = ini.gene,"c3" = ini.gene))
+```
+
+
+##result
+###without any recombination factor
+#### launching simulation for 20 replicate 
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "intermediate_recombination"
+n.replicate = 20
+recombs = rep(0,n.replicate)
+for(kk in 1:n.replicate){
+  output <- run(my_sim, verbose = FALSE)
+ # geno1 <- loadGeno(my_sim, generation = 1)
+  geno2 <- loadGeno(my_sim, generation = 2)
+  recombs[kk] <- 1-(sum(substr(geno2$V2,1,1) == substr(geno2$V3,1,1)) +  sum(substr(geno2$V2,2,2) == substr(geno2$V3,2,2)))/4000
+}
+```
+
+#### testing
+```{r}
+stopifnot(recombinationRate(10) > mean(recombs) - 2*sd(recombs))
+stopifnot(recombinationRate(10) < mean(recombs) + 2*sd(recombs))
+```
+
+```{r}
+hist(recombs)
+mean(recombs) - 2*sd(recombs)
+mean(recombs) + 2*sd(recombs)
+rec(10)
+```
+
+
+### with a recombination factor < 1
+#### launching simulation for 20 replicate 
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "larger_recombination"
+my_sim <- setParameter(my_sim, "recombination_factor", "{0.1}")
+n.replicate = 20
+recombs = rep(0,n.replicate)
+for(kk in 1:n.replicate){
+  output <- run(my_sim, verbose = FALSE)
+  geno2 <- loadGeno(my_sim, generation = 2)
+  recombs[kk] <- 1-(sum(substr(geno2$V2,1,1) == substr(geno2$V3,1,1)) +  sum(substr(geno2$V2,2,2) == substr(geno2$V3,2,2)))/4000
+}
+```
+
+#### testing
+```{r}
+stopifnot(recombinationRate(10*0.1) > mean(recombs) - 2*sd(recombs))
+stopifnot(recombinationRate(10*0.1) < mean(recombs) + 2*sd(recombs))
+```
+
+```{r}
+hist(recombs)
+mean(recombs) - 2*sd(recombs)
+mean(recombs) + 2*sd(recombs)
+rec(1)
+```
+
+
+### with a recombination factor > 1
+#### launching simulation for 20 replicate 
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "larger_recombination"
+my_sim <- setParameter(my_sim, "recombination_factor", "{2.3}")
+n.replicate = 20
+recombs = rep(0,n.replicate)
+for(kk in 1:n.replicate){
+  output <- run(my_sim, verbose = FALSE)
+  geno2 <- loadGeno(my_sim, generation = 2)
+  recombs[kk] <- 1-(sum(substr(geno2$V2,1,1) == substr(geno2$V3,1,1)) +  sum(substr(geno2$V2,2,2) == substr(geno2$V3,2,2)))/4000
+}
+```
+
+#### testing
+```{r}
+stopifnot(recombinationRate(10*2.3) > mean(recombs) - 2*sd(recombs))
+stopifnot(recombinationRate(10*2.3) < mean(recombs) + 2*sd(recombs))
+```
+
+```{r}
+hist(recombs)
+mean(recombs) - 2*sd(recombs)
+mean(recombs) + 2*sd(recombs)
+rec(10*2.3)
+```
