@@ -1,0 +1,64 @@
+---
+title: "Test the different input macro"
+output:
+  html_document: default
+---
+The goal of this notebook is to check how does the macros perform
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list("generations" = 5,
+                  "patch_capacity" = 100,
+                  "patch_number" = 1000,
+                  "stat" = "{adlt.nbInd_p}")
+my_sim.base = new("simulation",sim.dir = "macro/", parameters = parameters)
+```
+
+##Result
+### seq
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "seq"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{seq(1,1000,1000)}")
+run(my_sim, verbose =FALSE)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+stopifnot(stat[, 1]==seq(1,1000,length.out = 1000))
+```
+
+### rep
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "rep"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rep(5,1000)}")
+success <- run(my_sim, verbose =FALSE)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+stopifnot(stat[, 1]==rep(5,1000))
+```
+
+
+### rnorm
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "runif"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rnorm(1000,25,5)}")
+success <- run(my_sim, verbose =TRUE)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1])
+res <- ks.test(stat[, 1], rnorm(1000,25,5))
+stopifnot(res$p.value>0.01)
+```
+
+

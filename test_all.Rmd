@@ -6,8 +6,7 @@ title: "Launching all test"
 ```{r}
 components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape", "friction")
 working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape")
-not.working.components = c("female_sex_allocation",  "friction")
-
+not.working.components = c("female_sex_allocation",  "friction", "macro")
 ```
 
 
@@ -35,6 +34,7 @@ test <- function(component){
   }
 }
 ```
+
 
 
 ###Launching the test 
