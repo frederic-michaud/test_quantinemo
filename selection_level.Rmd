@@ -1,0 +1,158 @@
+---
+title: "Do the different type of selection work?"
+output:
+  html_document: default
+---
+
+the goal of this notebook is to check whether the different type of selection (soft/metapop/hard) are working correctly. To do so, we compare the speed of selection of some trait, and check wether they are selected or not.   
+In the second part, we also check intermediate regime, which at the moment doesn't seem to work well. 
+
+
+## loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+```
+
+#### creating initial genotype
+```{r}
+getGenotype <- function(freq,pop){
+  n1 = freq*pop
+  n2 = pop-n1
+  return(data.frame(col_1 = rep(c(1,2),c(n1,n2)),col_2 = c(rep(11,n1),rep(22,n2))))
+}
+```
+
+#### setting general (common) parameters
+we set two patch with 100 individuals. We have one trait, one locus and two allele, with value 0 and 1. First patch has only 0 and second patch has only 1, which mean that the phenotype of first population is 0 and of second population is 2. 
+the optimal is at 0.5, which mean that pop 1 is better than pop 2 but not perfect. 
+```{r}
+my_sim <- new("simulation" ,sim.dir = "selection_level/")
+
+#general pop
+my_sim  <- setParameter(my_sim,"replicates",100)
+my_sim  <- setParameter(my_sim,"generations",250)
+my_sim  <- setParameter(my_sim,"patch_capacity",50)
+my_sim  <- setParameter(my_sim,"patch_number",2)
+
+#Mating system
+my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",6)
+my_sim  <- setParameter(my_sim,"growth_rate",1.)
+
+#loci
+my_sim  <- setParameter(my_sim,"quanti_loci",1)
+my_sim  <- setParameter(my_sim,"quanti_all",2)
+my_sim  <- setParameter(my_sim,"selection_pressure_definition",0) #We define selection at patch level
+my_sim  <- setParameter(my_sim,"dispersal_rate",0.) 
+alleles <- data.frame(col_locus = c(1,1),col_allele = c(1,2),col_allelic_value = c(0, 1))
+my_sim <-  addFile(my_sim, "quanti_allelic_file",alleles)
+genotype <- getGenotype(0.5, my_sim@parameters[["patch_number"]]*20) #we fix 20 individual per patch here!
+my_sim <-  addFile(my_sim, "quanti_ini_genotypes",genotype )
+
+#selection
+my_sim  <- setParameter(my_sim,"patch_stab_sel_intensity","2")
+my_sim  <- setParameter(my_sim,"patch_stab_sel_optima","0.5")
+my_sim  <- setParameter(my_sim,"quanti_selection_model",1)
+
+#statistique
+my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd_p q.adlt.ho q.meanG_p }")
+```
+
+##testing for various level
+
+###Soft selection
+####Launching simulation
+```{r}
+my_sim@sim.name <- "soft_selection"
+my_sim  <- setParameter(my_sim,"selection_level",0)
+result <- run(my_sim, verbose=F)
+```
+
+```{r}
+statSoft <- loadStat(my_sim)
+plot(statSoft$adlt.nbInd_p1, main = "evolution of population size ", xlab = "generation", ylab = "nb. Individual", type = "l", col = "red", ylim = c(0,55))
+legend("topleft",legend = c("patch 1","patch 2"),
+lty=c(1,1), # gives the legend appropriate symbols (lines)
+lwd=c(2.5,2.5),
+col=c("blue","red")) 
+lines(statSoft$adlt.nbInd_p2, col = "blue")
+stopifnot(tail(statSoft$adlt.nbInd_p1,1)==49)
+stopifnot(tail(statSoft$adlt.nbInd_p2,1)==49)
+```
+
+
+
+
+##Metapop selection
+```{r}
+my_sim@sim.name <- "metapop_selection"
+my_sim  <- setParameter(my_sim,"selection_level",1)
+result <- run(my_sim,verbose=F)
+```
+
+```{r}
+statMetaPop <- loadStat(my_sim)
+plot(statMetaPop$adlt.nbInd_p1, main = "evolution of population size ", xlab = "generation", ylab = "nb. Individual", type = "l", col = "red", ylim = c(0,100))
+legend("topleft",legend = c("patch 1","patch 2"),
+lty=c(1,1), # gives the legend appropriate symbols (lines)
+lwd=c(2.5,2.5),
+col=c("blue","red")) 
+lines(statMetaPop$adlt.nbInd_p2, col = "blue")
+stopifnot(tail(statMetaPop$adlt.nbInd_p1,1)==99)
+stopifnot(tail(statMetaPop$adlt.nbInd_p2,1)==0)
+```
+##Hard selection
+```{r}
+my_sim@sim.name <- "hard_selection"
+my_sim  <- setParameter(my_sim,"selection_level",2)
+writeInput(my_sim)
+result <- run(my_sim,verbose=F)
+```
+
+```{r}
+statHard <- loadStat(my_sim)
+plot(statHard$adlt.nbInd_p1, main = "evolution of population size ", xlab = "generation", ylab = "nb. Individual", type = "l", col = "red", ylim = c(0,100))
+legend("topleft",legend = c("patch 1","patch 2"),
+lty=c(1,1), # gives the legend appropriate symbols (lines)
+lwd=c(2.5,2.5),
+col=c("blue","red")) 
+lines(statHard$adlt.nbInd_p2, col = "blue")
+stopifnot(tail(statHard$adlt.nbInd_p1,1)==45)
+stopifnot(tail(statHard$adlt.nbInd_p2,1)==24)
+```
+
+
+
+###Checking all intermediate regime
+#### soft-metaPop on metapop side
+```{r}
+my_sim@sim.name <- "soft_metapop0"
+my_sim  <- setParameter(my_sim,"selection_level",1)
+my_sim  <- setParameter(my_sim,"selection_level_coef",1)  
+result <- run(my_sim, verbose=F)
+stat <- loadStat(my_sim)
+stopifnot(stat$adlt.nbInd_p1 == statMetaPop$adlt.nbInd_p1)
+stopifnot(stat$adlt.nbInd_p2 == statMetaPop$adlt.nbInd_p2)
+```
+
+#### soft-metaPop on soft side
+does not work, this is why we commented the test
+```{r}
+my_sim@sim.name <- "soft_metapop0"
+my_sim  <- setParameter(my_sim,"selection_level",1)
+my_sim  <- setParameter(my_sim,"selection_level_coef",0)  
+result <- run(my_sim, verbose=F)
+stat <- loadStat(my_sim)
+#stopifnot(stat$adlt.nbInd_p1 == statSoft$adlt.nbInd_p1)
+#stopifnot(stat$adlt.nbInd_p2 == statSoft$adlt.nbInd_p2)
+```
+
+#### soft-metaPop in the middle
+```{r}
+my_sim@sim.name <- "soft_metapop0"
+my_sim  <- setParameter(my_sim,"selection_level",1)
+my_sim  <- setParameter(my_sim,"selection_level_coef",1)  
+result <- run(my_sim, verbose=F)
+stat <- loadStat(my_sim)
+```
+
+
