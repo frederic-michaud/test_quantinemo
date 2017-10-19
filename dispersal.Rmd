@@ -203,8 +203,7 @@ my_sim  <- setParameter(my_sim,"patch_ini_size","{10 0 0 0 0 0 0 0 0 0 0 0}")
 my_sim  <- setParameter(my_sim,"replicates",100)
 my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
 my_sim@sim.name <- "2d_stepping_stone_4"
-writeInput(my_sim)
-run(my_sim, verbose = FALSE)
+sucess <- run(my_sim, verbose = FALSE)
 ```
 We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the four first neighboor are occupied and then the five next and finaly the two last patch. Increasing the number of replicates, we can see the structure arrising from the broken rotationnal symmetry of the lattice. 
 ```{r}

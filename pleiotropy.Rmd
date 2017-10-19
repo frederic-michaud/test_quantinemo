@@ -3,7 +3,7 @@ title: "Test the pleiotropy"
 output:
   html_document: default
 ---
-The goal of this notebook is to check if pleiotropy works. First step is to define a pleitropic loci and check wether the phenotype is the same for both trait. 
+The goal of this notebook is to check if pleiotropy works. First step is to define a pleitropic loci and check whether the phenotype is the same for both traits. 
 
 ### loading package and setting minimal simulation
 ```{r}

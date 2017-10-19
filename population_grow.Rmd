@@ -12,7 +12,7 @@ devtools::load_all(pkg="../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "population_grow/",parameters=list("generations" = 1000, "patch_capacity" = 1000,"stat" = "{adlt.nbInd}"))
 ```
 
-# Population is equal to patch capacity. 
+### Population is equal to patch capacity. 
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "constant"
@@ -30,7 +30,7 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 # Test
 stopifnot(tail(stats$adlt.nbInd,1)==1000)
 ```
-# Population remain constant 
+### Population remain constant 
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "patch_capacity"
@@ -49,7 +49,8 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 # Test
 stopifnot(tail(stats$adlt.nbInd,1)==500)
 ```
-#  Poisson(N*fertility)  
+
+###  Poisson(N*fertility)  
 ```{r}
 grow.rate = 1.08
 ini.size = 30
@@ -107,7 +108,7 @@ stopifnot(min(pops.final) < pop.sim)
 stopifnot(max(pops.final) > pop.sim)
 ```
 
-# Round(N*fertility)  
+### Round(N*fertility)  
 
 Depending on the initialpopulation size, the population grow or stay constant
 ```{r}
@@ -161,7 +162,7 @@ pop.sim <- tail(stats$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
-# Poisson(N*fertility) with a cut at patch_capacity
+### Poisson(N*fertility) with a cut at patch_capacity
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "poisson_cut"
@@ -193,7 +194,7 @@ pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
 
-#(N*fertility) with a cut at patch_capacity
+###(N*fertility) with a cut at patch_capacity
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "smooth_fertility_cut"
@@ -226,7 +227,7 @@ pop.exp <- tail(pop,1)
 stopifnot(pop.sim == pop.exp)
 ```
 
-# (N*fertility) + binomial and cut
+### (N*fertility) + binomial and cut
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "smooth_fertility_corrected_cut"
@@ -289,7 +290,7 @@ stopifnot(pop[10] ==res[10],pop[100] ==res[100] )
 ```
 
 
-# Poisson(logistic grow)
+### Poisson(logistic grow)
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "logistic_poisson"
