@@ -1,0 +1,43 @@
+---
+title: "testing sex determination gene"
+output:
+  html_document: default
+---
+In this notebook, we check if we can set the sex of an individu using the value of a trait, through the parameter sex_ratio_threshold. If the parameter sex_ratio_threshold is set the sex of an offspring is determined by the phenotype of the first quantitative trait of the offspring.
+
+
+##loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list("generations" = 40,
+                  "patch_capacity" = 100, 
+                  "replicates" = 25, 
+                  "mating_system" = 3, #random mating with sex (promiscuity)
+                  "quanti_loci" = 1,
+                  "quanti_nb_trait" = 1,
+                  "quanti_save_phenotype" = 2,
+                  "sex_ratio_threshold" = 1, #so that we can observe a shift from the genotype from 0 (initial value) to 1
+                  "quanti_environmental_proportion" = 0,
+                  "stat" = "{q.meanP_p off.nbFem off.nbMal}"
+)
+my_sim.base = new("simulation",sim.dir = "sex_determination/", sim.name = "basic", parameters = parameters)
+```
+##result
+### basic example
+#### Launching basic simulation
+```{r}
+my_sim = my_sim.base
+success <- run(my_sim, verbose = F)
+```
+```{r}
+Pheno <- loadPheno(my_sim,replicate = 1)
+stat <- loadStat(my_sim)
+plot(stat$q.meanP, main = "Evolution of the genotype", type = "l")
+cat(" ")
+plot(stat$off.nbFem, main = "Male vs female", type = "l", col = "red")
+lines(stat$off.nbMal, col = "blue")
+stopifnot((Pheno$V2>1) == (Pheno$V4 == 0)) #we test if have phenotype > 1 is equivalent to having a female (v4 == 0) 
+stopifnot(tail(stat$q.meanP,1) > 0.9) #We check that we converge to a value close to 1. 
+stopifnot(tail(stat$q.meanP,1) < 1.2)
+```
+
