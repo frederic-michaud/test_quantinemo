@@ -1,0 +1,35 @@
+---
+title: "Test if we can perform statistic on only a sub group of patch/individual"
+output:
+  html_document: default
+---
+The goal of this notebook is to check if the parameters  to constrain the considered populations and/or individuals taken into account for statistic work. 
+
+### loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list("generations" = 100,
+                  "dispersal_rate" = 0.2,
+                  "mating_nb_offspring_model" =6,
+                  "mating_system" =3,
+                  "patch_capacity" = 100,
+                  "growth_rate" = 0.1,
+                  "patch_number" = 10,
+                  "stat" = "{adlt.nbInd_p adlt.nbFem_p adlt.nbMal_p adlt.nbInd adlt.meanInd adlt.sexRatio}")
+my_sim.base = new("simulation",sim.dir = "stat_sampling/", parameters = parameters)
+```
+
+##Result
+### Sampling only over half the patch (randomly choosen)
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "s_patch"
+my_sim <- setParameter(my_sim, "sampled_patches", "{1 2 3 4 5}")
+success <- run(my_sim, verbose = FALSE)
+```
+####Checking resut
+```{r}
+stat <- loadStat(my_sim)
+stopifnot(length(colnames(stat)) == 2 + 5 + 5 + 5 + 1 + 1 + 1 )
+```
