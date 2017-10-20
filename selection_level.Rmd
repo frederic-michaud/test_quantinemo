@@ -1,5 +1,5 @@
 ---
-title: "Do the different type of selection work?"
+title: "Does the different type of selection work?"
 output:
   html_document: default
 ---
