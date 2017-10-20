@@ -1,0 +1,44 @@
+---
+title: "How do time dependant parameters works?"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+#selection type
+the goal of this notebook is to check wether the time dependant parameter works. To simplify the problem, we will do it for population growth. 
+
+##set general parameters
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+my_sim <- new("simulation")
+
+#general pop
+my_sim  <- setParameter(my_sim,"replicates",20)
+my_sim  <- setParameter(my_sim,"generations",250)
+my_sim  <- setParameter(my_sim,"patch_capacity","(1 1000, 300 100)")
+my_sim  <- setParameter(my_sim,"patch_ini_size",50)
+my_sim  <- setParameter(my_sim,"extinction_rate","(1 0.001, 100 0.1)")
+
+#statistique
+my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd}")
+```
+
+#testing for various level
+
+##mating system
+Changing this produce very different result.
+```{r}
+#Mating system
+my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",7)
+my_sim  <- setParameter(my_sim,"growth_rate",0.1)
+
+result <- run(my_sim, verbose=T)
+```
+
+
+```{r}
+pop <- read.table("my_simulation/simulation_mean.txt",header = T)
+plot(pop$adlt.nbInd)
+```
+
