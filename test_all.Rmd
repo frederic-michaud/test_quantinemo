@@ -4,9 +4,10 @@ title: "Launching all test"
 
 ### Defining components
 ```{r}
-components = c("cloning","coalescence", "dispersal", "population_grow", "extinction","female_sex_allocation", "fitness_factor", "fitness_landscape", "friction", "macro","selection_coefficient", "selection_level")
-working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level")
-not.working.components = c("female_sex_allocation",  "friction", "macro")
+working.components =  c("cloning","coalescence", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level", "sex_determination", "density_migration_rate")
+not.working.components = c("female_sex_allocation",  "friction", "macro", "pleiotropy")
+
+components = c(working.components, not.working.components)
 ```
 
 
@@ -36,7 +37,7 @@ test <- function(component){
 ```
 
 ```{r}
-test("selection_level")
+test("density_migration_rate")
 ```
 
 
