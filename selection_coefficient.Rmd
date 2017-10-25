@@ -77,7 +77,7 @@ freqs = c(1,0.99,0.98,0.97,0.96,0.95,0.9,0.85,0.8,0.75,0.7)
 gens=list()
 plot(0:39,trans[1:40, 1],type="l")
 for (freq in freqs){
-  gen <- read.table(paste(as.character(freq), '/simulation_mean.txt',sep=""),header=T)
+  gen <- read.table(paste("selection_coefficient/",as.character(freq), '/simulation_mean.txt',sep=""),header=T)
   gens[[as.character(freq)]] <- gen$q.meanG[gen$generation == 250]/2
   points((1-freq)*100,gen$q.meanG[gen$generation == 250]/2)
 }

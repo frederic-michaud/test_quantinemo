@@ -52,7 +52,7 @@ stopifnot(recombinationRate(10) < mean(recombs) + 2*sd(recombs))
 hist(recombs)
 mean(recombs) - 2*sd(recombs)
 mean(recombs) + 2*sd(recombs)
-rec(10)
+recombinationRate(10)
 ```
 
 
@@ -81,7 +81,7 @@ stopifnot(recombinationRate(10*0.1) < mean(recombs) + 2*sd(recombs))
 hist(recombs)
 mean(recombs) - 2*sd(recombs)
 mean(recombs) + 2*sd(recombs)
-rec(1)
+recombinationRate(1)
 ```
 
 
@@ -110,5 +110,5 @@ stopifnot(recombinationRate(10*2.3) < mean(recombs) + 2*sd(recombs))
 hist(recombs)
 mean(recombs) - 2*sd(recombs)
 mean(recombs) + 2*sd(recombs)
-rec(10*2.3)
+recombinationRate(10*2.3)
 ```

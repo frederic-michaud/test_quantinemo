@@ -10,6 +10,7 @@ The goal of this notebook is to check if we can change the selection's position 
 devtools::load_all(pkg="../RQuantiNemo")
 parameters = list("generations" = 100,
                   "patch_capacity" = 100,
+                  "mating_nb_offspring_model" = 0,
                   "dispersal_rate" = 0.1,
                   "quanti_loci" = 1,
                   "quanti_all" = 255,
