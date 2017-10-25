@@ -51,14 +51,123 @@ stopifnot(stat[, 1]==rep(5,1000))
 my_sim <- my_sim.base
 my_sim@sim.name <- "runif"
 my_sim <- setParameter(my_sim, "patch_ini_size", "{rnorm(1000,25,5)}")
-success <- run(my_sim, verbose =TRUE)
+success <- run(my_sim, verbose =F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1],20)
+print(" ")
+hist(round(rnorm(1000,25,5),20))
+
+res <- ks.test(stat[, 1], round(rnorm(1000,25,5)))
+stopifnot(res$p.value>0.01)
+```
+
+### runif
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "runif"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{runif(1000,10,20)}")
+success <- run(my_sim, verbose =F)
 ```
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
 hist(stat[, 1])
-res <- ks.test(stat[, 1], rnorm(1000,25,5))
+print(" ")
+hist(floor(runif(1000,10,20)))
+table(stat[, 1])
+res <- ks.test(stat[, 1], floor(runif(1000,10,20)))
+stopifnot(res$p.value>0.01)
+```
+
+### rlnorm
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "rlnorm"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rlnorm(1000,3,1)}")
+success <- run(my_sim, verbose = F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(log(stat[, 1]))
+print(" ")
+hist(log(ceiling(rlnorm(1000,3,1))))
+res <- ks.test(stat[, 1], log(ceiling(rlnorm(1000,3,1))))
+```
+### RGamma
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "rgamma"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rgamma(1000,3,1)}")
+success <- run(my_sim, verbose =F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1])
+print(" ")
+hist(floor(rgamma(1000,3,1)))
+res <- ks.test(stat[, 1], floor(rgamma(1000,3,1)))
+stopifnot(res$p.value>0.01)
+```
+
+### rbeta
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "rbeta"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rbeta(1000,2,1,0,100)}")
+success <- run(my_sim, verbose =F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1])
+print(" ")
+hist(round(100*rbeta(1000,2,1)))
+res <- ks.test(stat[, 1], round(100*rbeta(1000,2,1)))
 stopifnot(res$p.value>0.01)
 ```
 
 
+### rpois
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "rpois"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rpois(1000,10)}")
+success <- run(my_sim, verbose =F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1])
+print(" ")
+hist(rpois(1000,10))
+res <- ks.test(stat[, 1], rpois(1000,10))
+stopifnot(res$p.value>0.01)
+```
+
+### sample
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "sample"
+my_sim <- setParameter(my_sim, "patch_ini_size", "{rsample(1000,1,8,10,14,20)}")
+success <- run(my_sim, verbose =F)
+```
+####Checking resut
+```{r}
+stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
+hist(stat[, 1])
+print(" ")
+hist(sample(c(8,10,14,20),1000,rep = T))
+res <- ks.test(stat[, 1],sample(c(8,10,14,20),1000,rep = T))
+stopifnot(res$p.value>0.01)
+```
