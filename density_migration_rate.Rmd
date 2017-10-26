@@ -1,40 +1,46 @@
 ---
 title: "density dependance of the migration rate"
-output: html_document
+output:
+  pdf_document: default
+  html_notebook: default
+  html_document: default
 ---
 
-The goal of this notebook is to test the density dependance of the migration rate. To check this, we use the following meta-pop. We use two patch, one is partially filled and the other one is complitely empty. We then simply check the number of people in the first (remaining people) and second patch (emigrant) after one generation.
+##Introduction
+The goal of this notebook is to describe and test the new implementation of the density dependance migration's rate.   
+The migration rate can now either be density independant or density dependant. This is set by the parameter "density_dependant_dispersal"
+ 
+ * density_dependant_dispersal = 0. Rate is flat and given by the parameter dispersal_rate.
+ * density_dependant_dispersal = 1. Rate follow the law $m\frac{(N-K(1-\exp(-N/K)))}{N}$, where $N$ is the number of individual before dispersal, $K$ the carrying capacity of the patch and $m$ the dispersal rate.
+ 
+ 
+For a density dependant dispersal and a dispersal rate of 1, the number of individual staying on the patch after dispersal is (on average) smaller than the carrying capacity of the patch, which make sens biologically.   
 
-##set general parameters and loading package
+
+To visualize the behaviour, we use the following meta-pop. We use two patch, one is partially filled and the other one is complitely empty. We then simply check the number of people in the first (remaining people) and second patch (emigrant) after one generation.
+
+### Setting general parameter for the simulaiton
 ```{r}
 devtools::load_all(pkg="../RQuantiNemo")
-```
-
-
-```{r}
 parameters = list(
-  "generations" = 3,
-  "patch_capacity" = 100,
-  "mating_nb_offspring_model" = 1,
-  "replicates" = 100,
-  "dispersal_rate" = 0.5,
+  "generations" = 2,
+  "mating_nb_offspring_model"=1, 
+  "patch_capacity" = 50,
+  "replicates" = 10,
   "patch_number" = 2,
-  "patch_ini_size" = "{50 0}",
-  "stat" = "{adlt.nbInd_p}",
-  "dispersal_k_max_growth" = 0.5,
-  "dispersal_k_growth_rate" = 20
+  "stat" = "{adlt.nbInd_p}"
 )
 my_sim <- new("simulation", parameters = parameters)
-  run(my_sim, verbose = F)
 ```
 
-##result
+## Simulation for a flat migration rate. 
 #### Loop over the number of initial individual in the first patch before dispersal
 ```{r}
-migrant = rep(0,100)
-stay = rep(0,100)
+my_sim <- setParameter(my_sim, "dispersal_rate", 0.2)
+migrant = rep(0,200)
+stay = rep(0,200)
 
-for(i in 1:100){
+for(i in 1:200){
   my_sim <- setParameter(my_sim, "patch_ini_size", paste("{", as.character(i)," 0}", collapse = ""))
   run(my_sim, verbose = F)
   stat <- loadStat(my_sim)
@@ -43,22 +49,73 @@ for(i in 1:100){
 }
 ```
 
-#### Ploting the result and comparing to theoretical value
+#### Ploting the result
 ```{r}
-plot(migrant, type = "l", col = "blue", lwd = 2)
-x = seq(1,100,1)
-lines(x-plogis(x/100,0.5,1/20)*x*0.5, col = "black")
-lines(plogis(x/100,0.5,1/20)*x*0.5, col = "black")
-
+plot(migrant, type = "l", col = "blue", lwd = 2,ylim = c(0,100), xlab = "Initial pop", ylab = "final pop")
 lines(stay, col = "red", lwd = 2)
-
-legend("topleft",legend = c("Emigrant","remaining pop","theoretical"),
-lty=c(1,1), # gives the legend appropriate symbols (lines)
+legend("topleft",legend = c("Emigrant","Remaining Ind."),
+lty=c(1,1),
 lwd=c(2.5,2.5),
-col=c("blue","red", "black")) # gives the legend lines the correct color and width
-dist <-  plogis(x/100,0.5,1/20)*x*0.5 - migrant
-stopifnot(sum(dist*dist)<50)
-
+col=c("blue","red")) 
 ```
-  
-  
+
+## Density dependant dispersal rate
+### Simulation for a density dependant dispersal rate, with a maximal rate of 1 
+#### Loop over the number of initial individual in the first patch before dispersal
+```{r}
+my_sim <- setParameter(my_sim, "dispersal_rate", 1)
+my_sim <- setParameter(my_sim, "density_dependant_dispersal", 1)
+migrant = rep(0,200)
+stay = rep(0,200)
+
+for(i in 1:200){
+  my_sim <- setParameter(my_sim, "patch_ini_size", paste("{", as.character(i)," 0}", collapse = ""))
+  run(my_sim, verbose = F)
+  stat <- loadStat(my_sim)
+  migrant[i] <- stat$adlt.nbInd_p2[2]
+  stay[i] <- stat$adlt.nbInd_p1[2]
+}
+```
+
+#### Ploting the result
+```{r}
+plot(migrant, type = "l", col = "blue", lwd = 2,ylim = c(0,100), xlab = "Initial pop", ylab = "final pop")
+lines(stay, col = "red", lwd = 2)
+lines(rep(50,200), col = "black", lwd = 1, lty = 2)
+legend("topleft",legend = c("Emigrant","Remaining Ind.", "Carrying capacity"),
+lty=c(1,1,2),
+lwd=c(2.5,2.5),
+col=c("blue","red", "black")) 
+```
+
+## Intermediate regime
+###Simulation for a density dependant dispersal rate, with a maximal rate of .5 
+
+#### Loop over the number of initial individual in the first patch before dispersal
+This does probably not make much sens. Basically, when saturation of the patch is reach, half of the surnumerous individual leave and the other half stay. 
+```{r}
+my_sim <- setParameter(my_sim, "dispersal_rate", .5)
+my_sim <- setParameter(my_sim, "density_dependant_dispersal", 1)
+migrant = rep(0,200)
+stay = rep(0,200)
+
+for(i in 1:200){
+  my_sim <- setParameter(my_sim, "patch_ini_size", paste("{", as.character(i)," 0}", collapse = ""))
+  run(my_sim, verbose = F)
+  stat <- loadStat(my_sim)
+  migrant[i] <- stat$adlt.nbInd_p2[2]
+  stay[i] <- stat$adlt.nbInd_p1[2]
+}
+```
+
+#### Ploting the result
+```{r}
+plot(migrant, type = "l", col = "blue", lwd = 2,ylim = c(0,100), xlab = "Initial pop", ylab = "final pop")
+lines(stay, col = "red", lwd = 2)
+lines(rep(50,200), col = "black", lwd = 1, lty = 2)
+legend("topleft",legend = c("Emigrant","Remaining Ind.", "Carrying capacity"),
+lty=c(1,1,2),
+lwd=c(2.5,2.5),
+col=c("blue","red", "black")) 
+```
+
