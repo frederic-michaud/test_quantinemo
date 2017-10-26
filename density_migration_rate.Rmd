@@ -1,8 +1,6 @@
 ---
 title: "density dependance of the migration rate"
 output:
-  pdf_document: default
-  html_notebook: default
   html_document: default
 ---
 
@@ -59,6 +57,17 @@ lwd=c(2.5,2.5),
 col=c("blue","red")) 
 ```
 
+#### Test
+```{r}
+migrant.th <- seq(1,200,1)*0.2
+stay.th <-  seq(1,200,1)*(1-0.2)
+migrant.diff <-  migrant - migrant.th
+stay.diff <-  stay - stay.th
+stopifnot(sum(stay.diff^2) < 1000)
+stopifnot(sum(migrant.diff^2) < 1000)
+```
+
+
 ## Density dependant dispersal rate
 ### Simulation for a density dependant dispersal rate, with a maximal rate of 1 
 #### Loop over the number of initial individual in the first patch before dispersal
@@ -87,6 +96,17 @@ lty=c(1,1,2),
 lwd=c(2.5,2.5),
 col=c("blue","red", "black")) 
 ```
+#### Test
+```{r}
+x = seq(1,200,1)
+migrant.th <- (x - 50*(1-exp(-x/50)))
+stay.th <- 50*(1-exp(-x/50))
+migrant.diff <-  migrant - migrant.th
+stay.diff <-  stay - stay.th
+stopifnot(sum(migrant.diff^2) < 1000)
+stopifnot(sum(stay.diff^2) < 1000)
+```
+
 
 ## Intermediate regime
 ###Simulation for a density dependant dispersal rate, with a maximal rate of .5 
@@ -119,3 +139,13 @@ lwd=c(2.5,2.5),
 col=c("blue","red", "black")) 
 ```
 
+#### Test
+```{r}
+x = seq(1,200,1)
+migrant.th <- 0.5*(x - 50*(1-exp(-x/50)))
+stay.th <- 0.5*(x + 50*(1-exp(-x/50)))
+migrant.diff <-  migrant - migrant.th
+stay.diff <-  stay - stay.th
+stopifnot(sum(migrant.diff^2) < 1000)
+stopifnot(sum(stay.diff^2) < 1000)
+```
