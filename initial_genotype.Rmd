@@ -1,0 +1,62 @@
+---
+title: "Testing various distribution for initial genotype"
+output:
+  html_document: default
+---
+In this notebook, we check if the value of the genotype can be set monommorphically or polymorphaly, and we check the corresponding phenotype distribution
+
+
+###loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list("generations" = 250,
+                  "patch_capacity" = 10000,
+                  "quanti_loci" = 1,
+                  "quanti_save_phenotype" = 1,
+                  "quanti_mutation_rate" = 0.01
+                  )
+my_sim.base = new("simulation",sim.dir = "initial_genotype/", parameters = parameters)
+```
+
+## Result
+### Monomorph initial genotype
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name = "monomorph"
+my_sim <- setParameter(my_sim,"quanti_ini_allele_model",1)
+success <- run(my_sim, verbose = F)
+```
+
+#### Plotting and checking result
+```{r}
+res <- loadPheno(my_sim, generation = 1)
+stopifnot(all(res$V2==0))
+res <- loadPheno(my_sim, generation = 2)
+hist(res$V2)
+res <- loadPheno(my_sim, generation = -1)
+hist(res$V2)
+```
+### Polymorph initial genotype
+#### Launching simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name = "polymorph"
+my_sim <- setParameter(my_sim,"quanti_ini_allele_model",0)
+my_sim <- setParameter(my_sim,"quanti_allelic_var",2)
+success <- run(my_sim, verbose = F)
+```
+
+#### Plotting and checking result
+```{r}
+res <- loadPheno(my_sim, generation = 1)
+hist(res$V2, freq = FALSE)
+lines(b,dnorm(b,0,(2)),col="red")
+var(res$V2)
+stopifnot(var(res$V2)<4.1)
+stopifnot(var(res$V2)>3.9)
+res <- loadPheno(my_sim, generation = -1)
+hist(res$V2)
+
+```
+
