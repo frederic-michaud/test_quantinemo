@@ -6,14 +6,11 @@ output:
 
 ##Introduction
 The goal of this notebook is to describe and test the new implementation of the density dependance migration's rate.   
-The migration rate can now either be density independant or density dependant. This is set by the parameter "density_dependant_dispersal"
+The migration rate can now be selected amoung three models. This is set by the parameter "migration_rate_model"
  
- * density_dependant_dispersal = 0. Rate is flat and given by the parameter dispersal_rate.
- * density_dependant_dispersal = 1. Rate follow the law $m\frac{(N-K(1-\exp(-N/K)))}{N}$, where $N$ is the number of individual before dispersal, $K$ the carrying capacity of the patch and $m$ the dispersal rate.
- 
- 
-For a density dependant dispersal and a dispersal rate of 1, the number of individual staying on the patch after dispersal is (on average) smaller than the carrying capacity of the patch, which make sens biologically.   
-
+ * migration_rate_model = 0. Rate is flat and given by the parameter dispersal_rate.
+ * migration_rate_model = 1. Rate follow the law $m\frac{e*(N-K(1-\exp(-N/K)))}{N}$, where $N$ is the number of individual before dispersal, $K$ the carrying capacity of the patch and $m$ the dispersal rate. The rate depend on the density of the patch and reach a capacity of m (set by the parameter dispersal_rate) for d = 1
+ * migration_rate_model = 1.Rate follow the law $\frac{(N-K(1-\exp(-N/K)))}{N}$. The rate is adjusted so that the number of migrant allow the occupation after dispersal to be smaller than the patch_capacity. 
 
 To visualize the behaviour, we use the following meta-pop. We use two patch, one is partially filled and the other one is complitely empty. We then simply check the number of people in the first (remaining people) and second patch (emigrant) after one generation.
 
@@ -68,12 +65,12 @@ stopifnot(sum(migrant.diff^2) < 1000)
 ```
 
 
-## Density dependant dispersal rate
-### Simulation for a density dependant dispersal rate, with a maximal rate of 1 
+## Density dependant dispersal rate model 1
+### Simulation for a density dependant dispersal rate
 #### Loop over the number of initial individual in the first patch before dispersal
 ```{r}
-my_sim <- setParameter(my_sim, "dispersal_rate", 1)
-my_sim <- setParameter(my_sim, "density_dependant_dispersal", 1)
+my_sim <- setParameter(my_sim, "dispersal_rate", 0.2)
+my_sim <- setParameter(my_sim, "dispersal_rate_model", 1)
 migrant = rep(0,200)
 stay = rep(0,200)
 
@@ -99,8 +96,8 @@ col=c("blue","red", "black"))
 #### Test
 ```{r}
 x = seq(1,200,1)
-migrant.th <- (x - 50*(1-exp(-x/50)))
-stay.th <- 50*(1-exp(-x/50))
+migrant.th <- exp(1)*(x - 50*(1-exp(-x/50)))*0.2
+stay.th <- x-exp(1)*(x - 50*(1-exp(-x/50)))*0.2
 migrant.diff <-  migrant - migrant.th
 stay.diff <-  stay - stay.th
 stopifnot(sum(migrant.diff^2) < 1000)
@@ -108,17 +105,15 @@ stopifnot(sum(stay.diff^2) < 1000)
 ```
 
 
-## Intermediate regime
-###Simulation for a density dependant dispersal rate, with a maximal rate of .5 
-
+## Migration dependant rate, model 2 (saturation of the # of migrant)
 #### Loop over the number of initial individual in the first patch before dispersal
 This does probably not make much sens. Basically, when saturation of the patch is reach, half of the surnumerous individual leave and the other half stay. 
+
 ```{r}
-my_sim <- setParameter(my_sim, "dispersal_rate", .5)
-my_sim <- setParameter(my_sim, "density_dependant_dispersal", 1)
+my_sim <- setParameter(my_sim, "dispersal_rate", 0.1) #should have no influence whatsoever
+my_sim <- setParameter(my_sim, "dispersal_rate_model", 2)
 migrant = rep(0,200)
 stay = rep(0,200)
-
 for(i in 1:200){
   my_sim <- setParameter(my_sim, "patch_ini_size", paste("{", as.character(i)," 0}", collapse = ""))
   run(my_sim, verbose = F)
@@ -127,6 +122,7 @@ for(i in 1:200){
   stay[i] <- stat$adlt.nbInd_p1[2]
 }
 ```
+
 
 #### Ploting the result
 ```{r}
@@ -142,8 +138,8 @@ col=c("blue","red", "black"))
 #### Test
 ```{r}
 x = seq(1,200,1)
-migrant.th <- 0.5*(x - 50*(1-exp(-x/50)))
-stay.th <- 0.5*(x + 50*(1-exp(-x/50)))
+migrant.th <-(x - 50*(1-exp(-x/50)))
+stay.th <- ( 50*(1-exp(-x/50)))
 migrant.diff <-  migrant - migrant.th
 stay.diff <-  stay - stay.th
 stopifnot(sum(migrant.diff^2) < 1000)
