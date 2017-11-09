@@ -120,18 +120,19 @@ $(document).ready(function () {
 </div>
 
 
-<p>The goal of this notebook is to check if the parameters to constrain the considered populations and/or individuals taken into account for statistic work.</p>
+<p>The goal of this notebook is to check if the parameters to constrain the considered populations and/or individuals taken into account for statistic work.<br />
+In the first part, we try to select subpatch. To do so we simply specify that we want the statistics of subpatch, and check in the output file that the statistics are only given for these subpatches (for stat computed for each patch). We also check (using the colone name of the statistic) that if we randomly pick the patch, they are randomly selected (checking distribution ofer 100 replicates)</p>
 <div id="loading-package-and-setting-minimal-simulation" class="section level3">
 <h3>loading package and setting minimal simulation</h3>
 <pre class="r"><code>devtools::load_all(pkg=&quot;../RQuantiNemo&quot;)</code></pre>
 <pre><code>## Loading RQuantiNemo</code></pre>
-<pre class="r"><code>parameters = list(&quot;generations&quot; = 100,
+<pre class="r"><code>parameters = list(&quot;generations&quot; = 3,
                   &quot;dispersal_rate&quot; = 0.2,
                   &quot;mating_nb_offspring_model&quot; =6,
                   &quot;mating_system&quot; =3,
                   &quot;patch_capacity&quot; = 100,
                   &quot;growth_rate&quot; = 0.1,
-                  &quot;patch_number&quot; = 10,
+                  &quot;patch_number&quot; = 9,
                   &quot;stat&quot; = &quot;{adlt.nbInd_p adlt.nbFem_p adlt.nbMal_p adlt.nbInd adlt.meanInd adlt.sexRatio}&quot;)
 my_sim.base = new(&quot;simulation&quot;,sim.dir = &quot;stat_sampling/&quot;, parameters = parameters)</code></pre>
 </div>
@@ -139,17 +140,115 @@ my_sim.base = new(&quot;simulation&quot;,sim.dir = &quot;stat_sampling/&quot;, p
 <h2>Result</h2>
 <div id="sampling-only-over-half-the-patch-randomly-choosen" class="section level3">
 <h3>Sampling only over half the patch (randomly choosen)</h3>
-<div id="launching-simulation" class="section level4">
-<h4>Launching simulation</h4>
+<div id="launching-simulation-and-testing-resutl" class="section level4">
+<h4>Launching simulation and testing resutl</h4>
 <pre class="r"><code>my_sim &lt;- my_sim.base
 my_sim@sim.name &lt;- &quot;s_patch&quot;
-my_sim &lt;- setParameter(my_sim, &quot;sampled_patches&quot;, &quot;{1 2 3 4 5}&quot;)
-success &lt;- run(my_sim, verbose = FALSE)</code></pre>
+my_sim &lt;- setParameter(my_sim, &quot;sampled_patches&quot;, &quot;5&quot;)
+all.sample = c()
+all.sample.th = c()
+for(i in 1:100){
+  success &lt;- run(my_sim, verbose = FALSE)
+  stat &lt;- loadStat(my_sim)
+  stat.names &lt;- names(stat)
+  patch.names &lt;- stat.names[grepl(&quot;adlt.nbInd_p&quot;,stat.names)]
+  patch.number &lt;- as.numeric(substr(patch.names,13,13))
+  all.sample &lt;- c(all.sample,patch.number)
+  all.sample.th &lt;- c(all.sample.th,sample(seq(1,9,1),5))
+}
+res &lt;- ks.test(all.sample.th, all.sample)</code></pre>
+<pre><code>## Warning in ks.test(all.sample.th, all.sample): p-value will be approximate
+## in the presence of ties</code></pre>
+<pre class="r"><code>res$p.value</code></pre>
+<pre><code>## [1] 0.7183794</code></pre>
+<pre class="r"><code>stopifnot(res$p.value &gt; 0.01)</code></pre>
 </div>
-<div id="checking-resut" class="section level4">
-<h4>Checking resut</h4>
-<pre class="r"><code>stat &lt;- loadStat(my_sim)
-stopifnot(length(colnames(stat)) == 2 + 5 + 5 + 5 + 1 + 1 + 1 )</code></pre>
+</div>
+<div id="sampling-only-over-a-definite-set-of-patch" class="section level3">
+<h3>Sampling only over a definite set of patch</h3>
+<div id="launching-simulation-and-testing-result" class="section level4">
+<h4>Launching simulation and testing result</h4>
+<pre class="r"><code>my_sim &lt;- my_sim.base
+my_sim@sim.name &lt;- &quot;s_patch&quot;
+my_sim &lt;- setParameter(my_sim, &quot;sampled_patches&quot;, &quot;{1 3 5 7 8}&quot;)
+success &lt;- run(my_sim, verbose = FALSE)
+stat &lt;- loadStat(my_sim)
+stat.names &lt;- names(stat)
+patch.names &lt;- stat.names[grepl(&quot;adlt.nbInd_p&quot;,stat.names)]
+patch.number &lt;- as.numeric(substr(patch.names,13,13))
+stopifnot(patch.number == c(1, 3, 5, 7, 8))</code></pre>
+</div>
+</div>
+<div id="sampling-within-the-population-of-a-patch" class="section level3">
+<h3>Sampling within the population of a patch</h3>
+<div id="launching-simulation-and-testing-result-1" class="section level4">
+<h4>Launching simulation and testing result</h4>
+<p>To check the statistics, we need something a bit more evolved, so we had one quantitative trait. We then compare the value that give us the statistics for the genotype at the first generation whether we consider the entire population or only a sub-samble. The variance for this various case should be different.</p>
+<pre class="r"><code>parameters = list(&quot;generations&quot; = 5, 
+                  &quot;patch_capacity&quot; = 100,
+                  &quot;quanti_loci&quot; = 1,
+                  &quot;quanti_allelic_var&quot; = 1,
+                  &quot;quanti_save_phenotype&quot; = 1,
+                  &quot;quanti_save_genotype&quot; = 1,
+                  &quot;quanti_all&quot; = 255,
+                  &quot;quanti_output&quot; = 1,
+                  &quot;stat&quot; = &quot;{q.meanG_p }&quot;
+)
+my_sim.base@parameters = parameters
+nb.rep = 100</code></pre>
+</div>
+<div id="single-individual" class="section level4">
+<h4>Single individual</h4>
+<pre class="r"><code>my_sim &lt;- my_sim.base
+my_sim@sim.name &lt;- &quot;s_var1&quot;
+phenotype.1s = c()
+for (i in 1:nb.rep){
+  my_sim &lt;- my_sim.base
+  my_sim &lt;- setParameter(my_sim, &quot;patch_sample_size&quot;, 1)
+  my_sim@sim.name &lt;- &quot;s1_individual&quot;
+  success &lt;- run(my_sim, verbose = F)
+  stat.ind &lt;- loadStat(my_sim)
+  phenotype.1s &lt;- c(phenotype.1s, (stat.ind$q.meanG[1]))
+}
+#deviation should be arround sqrt(2), because var of genotype is one, and therefore var of phenotype = 2
+stopifnot(sd(phenotype.1s) &gt; 1.3)
+stopifnot(sd(phenotype.1s) &lt; 1.5)</code></pre>
+</div>
+<div id="two-individual" class="section level4">
+<h4>Two individual</h4>
+<pre class="r"><code>my_sim &lt;- my_sim.base
+my_sim@sim.name &lt;- &quot;s_var1&quot;
+phenotype.2s = c()
+for (i in 1:nb.rep){
+  my_sim &lt;- my_sim.base
+  my_sim &lt;- setParameter(my_sim, &quot;patch_sample_size&quot;, 2)
+  my_sim@sim.name &lt;- &quot;s2_individual&quot;
+  success &lt;- run(my_sim, verbose = F)
+  stat.ind &lt;- loadStat(my_sim)
+  phenotype.2s &lt;- c(phenotype.2s, (stat.ind$q.meanG[1]))
+}
+#deviation should be arround 1(sqrt(2)/sqrt(2))
+sd(phenotype.2s)</code></pre>
+<pre><code>## [1] 0.9659367</code></pre>
+<pre class="r"><code>stopifnot(sd(phenotype.2s) &gt; 0.9)
+stopifnot(sd(phenotype.2s) &lt; 1.1)</code></pre>
+<pre class="r"><code>length(phenotype.0.5p)</code></pre>
+<pre><code>## [1] 100</code></pre>
+</div>
+<div id="half_population" class="section level4">
+<h4>half_population</h4>
+<pre class="r"><code>phenotype.0.5p = c()
+for (i in 1:nb.rep){
+  my_sim &lt;- my_sim.base
+  my_sim &lt;- setParameter(my_sim, &quot;patch_sample_size&quot;, 0.5)
+  my_sim@sim.name &lt;- &quot;s5_individual&quot;
+  success &lt;- run(my_sim, verbose = F)
+  stat.ind &lt;- loadStat(my_sim)
+  phenotype.0.5p &lt;- c(phenotype.0.5p, (stat.ind$q.meanG[1]))
+}
+#For 50% of the pop = 50 individual, we expect the phenotype to be sqrt(2)/sqrt(50) = 0.2
+stopifnot(sd(phenotype.0.5p) &gt; 0.18)
+stopifnot(sd(phenotype.0.5p) &lt; 0.22)</code></pre>
 </div>
 </div>
 </div>
