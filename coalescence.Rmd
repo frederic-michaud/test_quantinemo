@@ -16,27 +16,28 @@ library(ape)
 my_sim.base = new("simulation",sim.dir = "coalescence/")
 ```
 
-
 ### Ploting a coalescence tree
 ```{r}
 my_sim = my_sim.base
-my_sim@sim.name = "coalescence"
+my_sim@sim.name = "tree"
 #general pop
 my_sim  <- setParameter(my_sim,"generations",100)
-my_sim  <- setParameter(my_sim,"patch_capacity",3)
+my_sim  <- setParameter(my_sim,"patch_capacity",5)
 my_sim  <- setParameter(my_sim,"patch_number",1)
-my_sim  <- setParameter(my_sim,"migration_rate",0)
-my_sim  <- setParameter(my_sim,"migration_model",0)
+my_sim  <- setParameter(my_sim,"dispersal_rate",0)
+my_sim  <- setParameter(my_sim,"dispersal_model",0)
 my_sim  <- setParameter(my_sim,"coalescence",1)
 
 #neutral marker
 my_sim  <- setParameter(my_sim,"ntrl_loci",1)
+my_sim  <- setParameter(my_sim,"ntrl_genome","{{0 1000}}")
+my_sim  <- setParameter(my_sim,"ntrl_locus_index","{{1}}")
 my_sim  <- setParameter(my_sim,"ntrl_all",25)
 my_sim  <- setParameter(my_sim,"ntrl_ini_allele_model",1 )
 
 #output
 my_sim  <- setParameter(my_sim,"coalescence_save_tree",1)
-res <- run(my_sim, verbose = FALSE)
+res <- run(my_sim, verbose = F)
 ```
 
 
@@ -44,3 +45,69 @@ res <- run(my_sim, verbose = FALSE)
 tr <- read.nexus(paste(my_sim@sim.directory,my_sim@sim.name,"/simulation.tree",sep=""))
 plot(tr)
 ```
+
+
+### Comparing backward and forward in time simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name = "coalescence"
+#general pop
+my_sim  <- setParameter(my_sim,"generations",500) #not relevant
+my_sim  <- setParameter(my_sim,"patch_capacity",50)
+my_sim  <- setParameter(my_sim,"patch_number",1)
+
+#neutral marker
+my_sim  <- setParameter(my_sim,"ntrl_loci",1)
+my_sim  <- setParameter(my_sim,"ntrl_all",255)
+my_sim  <- setParameter(my_sim,"ntrl_mutation_rate",0.02)
+
+#output
+my_sim  <- setParameter(my_sim,"ntrl_save_genotype",1)
+my_sim  <- setParameter(my_sim,"stat","{n.adlt.fst}")
+#my_sim  <- setParameter(my_sim,"patch_sample_size",10)
+```
+
+###Forward in time
+```{r}
+iterations <- 100
+fwds <- list()
+for (i in 1:iterations){
+  my_sim  <- setParameter(my_sim,"coalescence",0)
+  res <- run(my_sim, verbose = F)
+  geno.fwd <- loadGeno(my_sim)
+  geno.fwd <- geno.fwd[, 2]
+  all.fwd <-  c(sapply(geno.fwd,substr,start=0, stop=3),
+           sapply(geno.fwd,substr,start=4, stop=6))
+  fwds[[i]] <- sort(table(all.fwd))
+}
+```
+
+###Backward in time
+```{r}
+iterations <- 100
+bkws <- list()
+for (i in 1:iterations){
+  my_sim  <- setParameter(my_sim,"coalescence",1)
+  res <- run(my_sim, verbose = F)
+  geno.bkw <- loadGeno(my_sim)
+  geno.bkw <- geno.bkw[, 2]
+  all.bkw <-  c(sapply(geno.bkw,substr,start=0, stop=3),
+           sapply(geno.bkw,substr,start=4, stop=6))
+    bkws[[i]] <- sort(table(all.bkw))
+}
+```
+
+```{r}
+#Checking various aspect of the distribution of frequency
+count1 <- function(x){sum(x==1)}
+res <- ks.test(sapply(fwds,count1),sapply(bkws,count1))
+stopifnot(res$p.value > 0.01)
+res <- ks.test(sapply(fwds,max),sapply(bkws,max))
+stopifnot(res$p.value > 0.01)
+res <- ks.test(sapply(fwds,length),sapply(bkws,length))
+stopifnot(res$p.value > 0.01)
+
+```
+
+
+
