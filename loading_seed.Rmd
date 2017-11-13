@@ -1,0 +1,76 @@
+---
+title: "Using seed"
+output:
+  html_document: default
+---
+
+##Introduction
+The goal of this notebook is to see if seeds are working. First we check that two simulations with the same seed leads to the same result, and two simulation with different seed leads to different result.
+Then we check if we can reload the seed from a previous simulation. 
+
+### Setting general parameter for the simulaiton
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+parameters = list(
+  "generations" = 100,
+  "mating_nb_offspring_model"=2, #randomness come from here
+  "patch_capacity" = 100,
+  "mean_fecundity" = 1,
+  "replicates" = 2,
+  "stat" = "{adlt.nbInd}"
+)
+my_sim.base <- new("simulation", sim.dir = "loading_seed/",parameters = parameters)
+```
+
+## Checking for defined by user seed   
+Simulation 1 and 2 have common seeds while simulation 3 has different seed 
+```{r}
+my_sim1 <- my_sim.base
+my_sim2 <- my_sim.base
+my_sim3 <- my_sim.base
+my_sim1@sim.name = "seed1"
+my_sim2@sim.name = "seed2"
+my_sim3@sim.name = "seed3"
+my_sim1 <- setParameter(my_sim1,"seed","1234")
+my_sim2 <- setParameter(my_sim2,"seed","1234")
+my_sim3 <- setParameter(my_sim3,"seed","1235")
+success <- run(my_sim1, verbose = F)
+success <- run(my_sim2, verbose = F)
+success <- run(my_sim3, verbose = F)
+```
+
+#### Ploting the result and checking them
+```{r}
+stat1 = loadStat(my_sim1)
+stat2 = loadStat(my_sim2)
+stat3 = loadStat(my_sim3)
+plot(stat1$adlt.nbInd, type = "l")
+points(stat2$adlt.nbInd)
+points(stat3$adlt.nbInd)
+stopifnot(all(stat1$adlt.nbInd == stat2$adlt.nbInd))
+stopifnot(!all(stat1$adlt.nbInd == stat3$adlt.nbInd))
+```
+
+### Automatic seed    
+#### Launching simulation
+Now, we have no defined seed, but we take the one of the output file to set it in an input file, and check that we have the same result. 
+```{r}
+my_sim4 <- my_sim.base
+my_sim4@sim.name = "seed4"
+sucess <- run(my_sim4, verbose = F)
+seeds <- readLines("loading_seed/seed4/simulation.log")[[grep('seed ',readLines("loading_seed/seed4/simulation.log"))]]
+seeds <- substr(seeds,6,nchar(seeds))
+my_sim5 <- my_sim.base
+my_sim5@sim.name = "seed5"
+my_sim5 <- setParameter(my_sim5,"seed",seeds)
+sucess <- run(my_sim5, verbose = F)
+```
+
+#### Plotting and checking result. 
+```{r}
+stat4 = loadStat(my_sim4)
+stat5 = loadStat(my_sim5)
+plot(stat4$adlt.nbInd, type = "l")
+points(stat5$adlt.nbInd)
+stopifnot(all(stat1$adlt.nbInd == stat2$adlt.nbInd))
+```
