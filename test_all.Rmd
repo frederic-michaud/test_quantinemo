@@ -5,7 +5,7 @@ title: "Launching all test"
 ### Defining components
 ```{r}
 working.components =  c("cloning", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level", "sex_determination", "density_migration_rate", "stat_sampling",
-                        "macro", "random_per_replicate","initial_genotype", "coalescence")
+                        "macro", "random_per_replicate","initial_genotype", "coalescence", "external_file")
 not.working.components = c("female_sex_allocation",  "friction", "pleiotropy")
 components = c(working.components, not.working.components)
 ```
@@ -37,7 +37,7 @@ test <- function(component){
 ```
 
 ```{r}
-test("stat_sampling")
+test("external_file")
 ```
 
 
