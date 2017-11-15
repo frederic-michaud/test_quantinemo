@@ -108,6 +108,113 @@ res <- ks.test(sapply(fwds,length),sapply(bkws,length))
 stopifnot(res$p.value > 0.01)
 
 ```
+## Tree and stats with migration
+### Ploting a coalescence tree
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name = "tree_migr"
+#general pop
+my_sim  <- setParameter(my_sim,"generations",500)
+my_sim  <- setParameter(my_sim,"patch_capacity",25)
+my_sim  <- setParameter(my_sim,"patch_number",2)
+my_sim  <- setParameter(my_sim,"dispersal_rate",0.02)
+my_sim  <- setParameter(my_sim,"dispersal_model",0)
+my_sim  <- setParameter(my_sim,"coalescence",1)
+
+#neutral marker
+my_sim  <- setParameter(my_sim,"ntrl_loci",1)
+my_sim  <- setParameter(my_sim,"ntrl_mutation_rate",0.01)
+my_sim  <- setParameter(my_sim,"ntrl_all",255)
+my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd_p}")
+my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd_p}")
+
+#output
+my_sim  <- setParameter(my_sim,"coalescence_save_tree",1)
+my_sim  <- setParameter(my_sim,"ntrl_save_genotype",1)
+res <- run(my_sim, verbose = F)
+```
+
+```{r}
+tr <- read.nexus(paste(my_sim@sim.directory,my_sim@sim.name,"/simulation.tree",sep=""))
+plot(tr)
+```
+
+```{r}
+#Computing a distance between pop. Sum_allele (n_1 - n_2)^2/(n_1 + n_2). 
+#This distance should take the value 0 if both population are the same, 
+#and number of individual if they are completely different. 
+
+distance.pop <- function(pop1, pop2){
+  alleles.1 = names(pop1)
+alleles.2 =names(pop2)
+  alleles.both = intersect(alleles.1, alleles.2)
+  alleles.just.1 = setdiff(alleles.1,alleles.both)
+  alleles.just.2 = setdiff(alleles.2,alleles.both)
+  distance <- 0
+  for (allele.name in alleles.both){
+    distance <- distance + (pop1[[allele.name]] - pop2[[allele.name]])^2/(pop1[[allele.name]] + pop2[[allele.name]])
+  } 
+   for (allele.name in alleles.just.1){
+    distance <- distance + pop1[[allele.name]] 
+   }
+  for (allele.name in alleles.just.2){
+    distance <- distance + pop2[[allele.name]] 
+  }
+  return(distance)
+}
+```
 
 
+
+
+```{r}
+my_sim  <- setParameter(my_sim,"coalescence",1)
+dispersal.rates = c(0.001,0.005,0.01,0.05,0.1)
+dispersal.rates = 0.5^seq(2,9)
+distance.per.rate.fwd = c()
+for (dispersal.rate in dispersal.rates){
+  my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+  n.rep = 10
+  distances = c()
+  for(rep in 1:n.rep){
+    res <- run(my_sim, verbose = F)
+    geno <- loadGeno(my_sim)
+    #retrieving the genome from both population
+    geno[["V3"]] <- sapply(geno$V2,substr,start=1, stop=3)
+    geno[["V4"]] <- sapply(geno$V2,substr,start=4, stop=6)
+    pop1 <- table(c(geno[geno$V1==1, 3],geno[geno$V1==1, 4]))
+    pop2 <- table(c(geno[geno$V1==2, 3],geno[geno$V1==2, 4]))
+    distances <- c(distances, distance.pop(pop1, pop2))
+  }
+  distance.per.rate.fwd <- c(distance.per.rate.fwd, mean(distances))
+}
+```
+
+```{r}
+my_sim  <- setParameter(my_sim,"coalescence",0)
+distance.per.rate.bkw = c()
+for (dispersal.rate in dispersal.rates){
+  my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
+  n.rep = 10
+  distances = c()
+  for(rep in 1:n.rep){
+    res <- run(my_sim, verbose = F)
+    geno <- loadGeno(my_sim)
+    #retrieving the genome from both population
+    geno[["V3"]] <- sapply(geno$V2,substr,start=1, stop=3)
+    geno[["V4"]] <- sapply(geno$V2,substr,start=4, stop=6)
+    pop1 <- table(c(geno[geno$V1==1, 3],geno[geno$V1==1, 4]))
+    pop2 <- table(c(geno[geno$V1==2, 3],geno[geno$V1==2, 4]))
+    distances <- c(distances, distance.pop(pop1, pop2))
+  }
+  distance.per.rate.bkw <- c(distance.per.rate.bkw, mean(distances))
+}
+```
+
+```{r}
+plot(dispersal.rates, distance.per.rate.fwd, log = "x", type = "b",ylim = c(0,100),xlab = "migration rate", ylab = "distance", main = "comparing the distance for forward and backward simulation")
+points(dispersal.rates, distance.per.rate.bkw, pch=2)
+stopifnot(sum((distance.per.rate.bkw - distance.per.rate.fwd)^2)<600)
+sum((distance.per.rate.bkw - distance.per.rate.fwd)^2)
+```
 
