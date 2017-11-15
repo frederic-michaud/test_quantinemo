@@ -2,8 +2,6 @@
 title: "Check extinction"
 output:
   html_document: default
-  html_notebook: default
-  word_document: default
 ---
 The goal of this notebook is to check if extinction rate works and is what is expected.
 To do so, we create a meta-population with a lot of patch, and count the number of disapearance over a long period. 
@@ -18,7 +16,7 @@ my_sim.base = new("simulation",sim.dir = "extinction/")
 ```{r}
 n.iter = 1000
 n.patch = 100
-patch.capacity = 50
+patch.capacity = 100
 ```
 
 
@@ -29,7 +27,7 @@ my_sim.base  <- setParameter(my_sim.base,"patch_number",n.patch)
 my_sim.base  <- setParameter(my_sim.base,"stat","{adlt.nbInd_p }")
 my_sim.base  <- setParameter(my_sim.base,"mating_nb_offspring_model",0)
 my_sim.base  <- setParameter(my_sim.base,"dispersal_model",0)
-my_sim.base  <- setParameter(my_sim.base,"dispersal_rate",0.1)
+my_sim.base  <- setParameter(my_sim.base,"dispersal_rate",0.5)
 my_sim.base  <- setParameter(my_sim.base,"patch_ini_size",patch.capacity)
 ```
 
@@ -41,18 +39,34 @@ my_sim.base  <- setParameter(my_sim.base,"patch_ini_size",patch.capacity)
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <-  "no_repopulation"
-my_sim  <- setParameter(my_sim,"extinction_rate",0.05)
+my_sim  <- setParameter(my_sim,"extinction_rate",0.2)
 success <- run(my_sim, verbose = FALSE)
 ```
-
 #### Checking rate
 ```{r}
 Qn <- loadStat(my_sim)
 Qn <- as.matrix(Qn[-1, 3:102])
 computed.rate = sum(Qn ==0)/length(Qn)
 print(computed.rate)
-stopifnot(sum(Qn ==0) > qbinom(0.005,999*100,0.05))
-stopifnot(sum(Qn ==0) < qbinom(0.995,999*100,0.05))
+stopifnot(sum(Qn ==0) > qbinom(0.005,999*100,0.2))
+stopifnot(sum(Qn ==0) < qbinom(0.995,999*100,0.2))
+```
+
+###same with different recombination rate
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <-  "no_repopulation"
+my_sim  <- setParameter(my_sim,"extinction_rate",0.6)
+success <- run(my_sim, verbose = FALSE)
+```
+#### Checking rate
+```{r}
+Qn <- loadStat(my_sim)
+Qn <- as.matrix(Qn[-1, 3:102])
+computed.rate = sum(Qn ==0)/length(Qn)
+print(computed.rate)
+stopifnot(sum(Qn ==0) > qbinom(0.005,999*100,0.6))
+stopifnot(sum(Qn ==0) < qbinom(0.995,999*100,0.6))
 ```
 
 ### Extinction with repopulation with fixed number of individual
@@ -60,7 +74,7 @@ stopifnot(sum(Qn ==0) < qbinom(0.995,999*100,0.05))
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <-  "absolute_repopulation"
-my_sim  <- setParameter(my_sim,"extinction_rate",0.05)
+my_sim  <- setParameter(my_sim,"extinction_rate",0.1)
 my_sim  <- setParameter(my_sim,"extinction_rate_survival",10)
 success <- run(my_sim, verbose = FALSE)
 ```
@@ -71,8 +85,8 @@ Qn <- loadStat(my_sim)
 Qn <- as.matrix(Qn[-1, 3:102])
 computed.rate = sum(Qn ==10)/length(Qn)
 print(computed.rate)
-stopifnot(sum(Qn == 10) > qbinom(0.005,999*100,0.05))
-stopifnot(sum(Qn == 10) < qbinom(0.995,999*100,0.05))
+stopifnot(sum(Qn == 10) > qbinom(0.005,999*100,0.1))
+stopifnot(sum(Qn == 10) < qbinom(0.995,999*100,0.1))
 ```
 
 ### Extinction with repopulation with percentage of previous population
@@ -89,7 +103,7 @@ success <- run(my_sim, verbose = FALSE)
 ```{r}
 Qn <- loadStat(my_sim)
 Qn <- as.matrix(Qn[-1, 3:102])
-sum.pos <-  sum(Qn < 10 )
+sum.pos <-  sum(Qn < 20 )
 computed.rate = sum.pos/length(Qn)
 print(computed.rate)
 stopifnot(sum.pos > qbinom(0.005,999*100,0.05))

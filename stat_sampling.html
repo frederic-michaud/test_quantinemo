@@ -160,7 +160,7 @@ res &lt;- ks.test(all.sample.th, all.sample)</code></pre>
 <pre><code>## Warning in ks.test(all.sample.th, all.sample): p-value will be approximate
 ## in the presence of ties</code></pre>
 <pre class="r"><code>res$p.value</code></pre>
-<pre><code>## [1] 0.7183794</code></pre>
+<pre><code>## [1] 0.8631782</code></pre>
 <pre class="r"><code>stopifnot(res$p.value &gt; 0.01)</code></pre>
 </div>
 </div>
@@ -211,8 +211,8 @@ for (i in 1:nb.rep){
   phenotype.1s &lt;- c(phenotype.1s, (stat.ind$q.meanG[1]))
 }
 #deviation should be arround sqrt(2), because var of genotype is one, and therefore var of phenotype = 2
-stopifnot(sd(phenotype.1s) &gt; 1.3)
-stopifnot(sd(phenotype.1s) &lt; 1.5)</code></pre>
+stopifnot(sd(phenotype.1s) &gt; 1.2)
+stopifnot(sd(phenotype.1s) &lt; 1.6)</code></pre>
 </div>
 <div id="two-individual" class="section level4">
 <h4>Two individual</h4>
@@ -229,11 +229,9 @@ for (i in 1:nb.rep){
 }
 #deviation should be arround 1(sqrt(2)/sqrt(2))
 sd(phenotype.2s)</code></pre>
-<pre><code>## [1] 0.9659367</code></pre>
-<pre class="r"><code>stopifnot(sd(phenotype.2s) &gt; 0.9)
-stopifnot(sd(phenotype.2s) &lt; 1.1)</code></pre>
-<pre class="r"><code>length(phenotype.0.5p)</code></pre>
-<pre><code>## [1] 100</code></pre>
+<pre><code>## [1] 1.012072</code></pre>
+<pre class="r"><code>stopifnot(sd(phenotype.2s) &gt; 0.85)
+stopifnot(sd(phenotype.2s) &lt; 1.15)</code></pre>
 </div>
 <div id="half_population" class="section level4">
 <h4>half_population</h4>
@@ -247,8 +245,8 @@ for (i in 1:nb.rep){
   phenotype.0.5p &lt;- c(phenotype.0.5p, (stat.ind$q.meanG[1]))
 }
 #For 50% of the pop = 50 individual, we expect the phenotype to be sqrt(2)/sqrt(50) = 0.2
-stopifnot(sd(phenotype.0.5p) &gt; 0.18)
-stopifnot(sd(phenotype.0.5p) &lt; 0.22)</code></pre>
+stopifnot(sd(phenotype.0.5p) &gt; 0.17)
+stopifnot(sd(phenotype.0.5p) &lt; 0.23)</code></pre>
 </div>
 </div>
 </div>

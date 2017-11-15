@@ -35,7 +35,7 @@ my_sim  <- setParameter(my_sim,"patch_capacity",50)
 my_sim  <- setParameter(my_sim,"patch_number",2)
 
 #Mating system
-my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",6)
+my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",8)
 my_sim  <- setParameter(my_sim,"growth_rate",1.)
 
 #loci
@@ -71,7 +71,7 @@ result <- run(my_sim, verbose=F)
 statSoft <- loadStat(my_sim)
 plot(statSoft$adlt.nbInd_p1, main = "evolution of population size ", xlab = "generation", ylab = "nb. Individual", type = "l", col = "red", ylim = c(0,55))
 legend("topleft",legend = c("patch 1","patch 2"),
-lty=c(1,1), # gives the legend appropriate symbols (lines)
+lty=c(1,1),
 lwd=c(2.5,2.5),
 col=c("blue","red")) 
 lines(statSoft$adlt.nbInd_p2, col = "blue")

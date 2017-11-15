@@ -146,7 +146,7 @@ my_sim  &lt;- setParameter(my_sim,&quot;patch_capacity&quot;,50)
 my_sim  &lt;- setParameter(my_sim,&quot;patch_number&quot;,2)
 
 #Mating system
-my_sim  &lt;- setParameter(my_sim,&quot;mating_nb_offspring_model&quot;,6)
+my_sim  &lt;- setParameter(my_sim,&quot;mating_nb_offspring_model&quot;,8)
 my_sim  &lt;- setParameter(my_sim,&quot;growth_rate&quot;,1.)
 
 #loci
@@ -181,7 +181,7 @@ result &lt;- run(my_sim, verbose=F)</code></pre>
 <pre class="r"><code>statSoft &lt;- loadStat(my_sim)
 plot(statSoft$adlt.nbInd_p1, main = &quot;evolution of population size &quot;, xlab = &quot;generation&quot;, ylab = &quot;nb. Individual&quot;, type = &quot;l&quot;, col = &quot;red&quot;, ylim = c(0,55))
 legend(&quot;topleft&quot;,legend = c(&quot;patch 1&quot;,&quot;patch 2&quot;),
-lty=c(1,1), # gives the legend appropriate symbols (lines)
+lty=c(1,1),
 lwd=c(2.5,2.5),
 col=c(&quot;blue&quot;,&quot;red&quot;)) 
 lines(statSoft$adlt.nbInd_p2, col = &quot;blue&quot;)</code></pre>

@@ -27,7 +27,7 @@ run(my_sim, verbose =FALSE)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-stopifnot(stat[, 1]==seq(1,1000,length.out = 1000))
+stopifnot(stat[1, ]==seq(1,1000,length.out = 1000))
 ```
 
 ### rep
@@ -41,7 +41,7 @@ success <- run(my_sim, verbose =FALSE)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-stopifnot(stat[, 1]==rep(5,1000))
+stopifnot(stat[1, ]==rep(5,1000))
 ```
 
 
@@ -56,11 +56,11 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1],20)
+hist(stat[1, ],20)
 print(" ")
 hist(round(rnorm(1000,25,5),20))
 
-res <- ks.test(stat[, 1], round(rnorm(1000,25,5)))
+res <- ks.test(stat[1, ], round(rnorm(1000,25,5)))
 stopifnot(res$p.value>0.01)
 ```
 
@@ -75,11 +75,11 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1])
+hist(stat[1, ])
 print(" ")
 hist(floor(runif(1000,10,20)))
-table(stat[, 1])
-res <- ks.test(stat[, 1], floor(runif(1000,10,20)))
+table(stat[1, ])
+res <- ks.test(stat[1, ], floor(runif(1000,10,20)))
 stopifnot(res$p.value>0.01)
 ```
 
@@ -94,10 +94,10 @@ success <- run(my_sim, verbose = F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(log(stat[, 1]))
+hist(log(stat[1, ]))
 print(" ")
 hist(log(ceiling(rlnorm(1000,3,1))))
-res <- ks.test(stat[, 1], log(ceiling(rlnorm(1000,3,1))))
+res <- ks.test(stat[1, ], log(ceiling(rlnorm(1000,3,1))))
 ```
 ### RGamma
 #### Launching simulation
@@ -110,10 +110,10 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1])
+hist(stat[1, ])
 print(" ")
 hist(floor(rgamma(1000,3,1)))
-res <- ks.test(stat[, 1], floor(rgamma(1000,3,1)))
+res <- ks.test(stat[1, ], floor(rgamma(1000,3,1)))
 stopifnot(res$p.value>0.01)
 ```
 
@@ -128,10 +128,10 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1])
+hist(stat[1, ])
 print(" ")
 hist(round(100*rbeta(1000,2,1)))
-res <- ks.test(stat[, 1], round(100*rbeta(1000,2,1)))
+res <- ks.test(stat[1, ], round(100*rbeta(1000,2,1)))
 stopifnot(res$p.value>0.01)
 ```
 
@@ -147,10 +147,10 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1])
+hist(stat[1, ])
 print(" ")
 hist(rpois(1000,10))
-res <- ks.test(stat[, 1], rpois(1000,10))
+res <- ks.test(stat[1, ], rpois(1000,10))
 stopifnot(res$p.value>0.01)
 ```
 
@@ -165,9 +165,9 @@ success <- run(my_sim, verbose =F)
 ####Checking resut
 ```{r}
 stat <- loadStatPatch(my_sim, "adlt.nbInd_p")
-hist(stat[, 1])
+hist(stat[1, ])
 print(" ")
 hist(sample(c(8,10,14,20),1000,rep = T))
-res <- ks.test(stat[, 1],sample(c(8,10,14,20),1000,rep = T))
+res <- ks.test(stat[1, ],sample(c(8,10,14,20),1000,rep = T))
 stopifnot(res$p.value>0.01)
 ```

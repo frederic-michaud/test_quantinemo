@@ -3,33 +3,108 @@ title: "Test the selection position"
 output:
   html_document: default
 ---
-The goal of this notebook is to check if we can change the selection's position from "before breeding" to another position, like before dispersal. 
+The goal of this notebook is to check if we can change the selection's position from "before breeding" to another position. 
+Their are four different different possibilities:
+ * At Breeding level 1 - The number of offspring is given by the "number of offspring model" andt the fittest individuals are (randomly) selected as parents.
+ * At Breeding level 2 - The number of offspring is given by the "number of offspring model". Individual are created and (randomly) killed depending of their fitness until the number of offsping is reach.
+ * Before dispersal - The number of offspring is given by the "number of offsping model" but they are randomly created (no selection). Before dispersal, the number of individual on each patch is cut to its carrying capacity, selecting (randomly) the fittest individual. 
+  * After dispersal - The number of offspring is given by the "number of offsping model" but they are randomly created (no selection). After dispersal, the number of individual on each patch is cut to its carrying capacity, selecting (randomly) the fittest individual.
+  
+In this notebook, we have two differents kind of results. First, we test the selection for adults (before and after dispersal).
+To do so, we populate the patch with too many individual, and then check that each patch has exacty the carrying capacity of individual (before dispersal) or that it has on average the carrying capacity (after dispersal: after migration, total number of individual should be the same as before diserpsal, though they are local fluctuation). We also check that the genotype "improve" with time, i.e. that there is some kind of selection. 
 
-### loading package and setting minimal simulation
+Secondly, we check that if a deleterious allele is recesive, the number of homozygote is lower with a selection on offspring and not parents. 
+
+### loading package and setting minimal simulation for first part
 ```{r}
 devtools::load_all(pkg="../RQuantiNemo")
 parameters = list("generations" = 100,
                   "patch_capacity" = 100,
-                  "mating_nb_offspring_model" = 0,
-                  "dispersal_rate" = 0.1,
+                  "patch_number" = 80,
+                  "mating_nb_offspring_model" = 2,
+                  "mean_fecundity" = 2,
                   "quanti_loci" = 1,
-                  "quanti_all" = 255,
-                  "quanti_selection_model" = 1
+                  "selection_pressure_definition" = 1,
+                  "quanti_selection_model" = 1,
+                  "quanti_stab_sel_optima" = 1,
+                  "dispersal_rate" = 0.1,
+                  "stat" = "{adlt.nbInd_p q.meanP_p}"
                   )
-
 my_sim.base = new("simulation",sim.dir = "selection_position/", parameters = parameters)
 ```
-
-
-
 ##Result
-### Checking if phenotype is the same for pleiotropic loci. 
+### Selection position is before dispersal
 #### Launching simulation
 ```{r}
 my_sim <- my_sim.base
 my_sim@sim.name <- "basic"
-my_sim <- setParameter(my_sim, "selection_position", 1)
-print(my_sim)
-run(my_sim, verbose =T)
+my_sim <- setParameter(my_sim, "selection_position", 2)
+success <- run(my_sim, verbose =F)
 ```
+
+```{r}
+adlt <- loadStatPatch(my_sim, "adlt.nbInd_p")
+phenotype <- loadStatPatch(my_sim, "q.meanP_p")
+stopifnot(rowMeans(adlt[, ])==100)
+plot(rowMeans(phenotype[-1, ]),main = "Evoluation of the mean phenotype", ylab = "Mean phenotype",xlab = "Generations")
+stopifnot(mean(phenotype[100, ]) > 0.9)
+stopifnot(mean(phenotype[100, ]) < 1.1)
+```
+
+### Selection position is after dispersal
+#### Launching simulation
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "basic"
+my_sim <- setParameter(my_sim, "selection_position", 3)
+success <- run(my_sim, verbose =F)
+```
+####Checking result
+```{r}
+adlt <- loadStatPatch(my_sim, "adlt.nbInd_p")
+phenotype <- loadStatPatch(my_sim, "q.meanP_p")
+stopifnot(adlt[, ]==100)
+plot(rowMeans(phenotype[-1, ]),main = "Evoluation of the mean phenotype", ylab = "Mean phenotype",xlab = "Generations")
+stopifnot(mean(phenotype[100, ]) > 0.9)
+stopifnot(mean(phenotype[100, ]) < 1.1)
+```
+
+### loading package and setting minimal simulation for first part
+```{r}
+parameters = list("generations" = 50,
+                  "patch_capacity" = 1000,
+                  "mating_nb_offspring_model" = 0,
+                  "patch_number" = 1,
+                  "quanti_loci" = 1,
+                  "quanti_all " = 2, 
+                  "selection_pressure_definition" = 1,
+                  "selection_level" = 0,
+                  "quanti_selection_model" = 4,
+                  "quanti_coef_sel" = 1,
+                  "quanti_dominance_mean" = 0,
+                  "quanti_dominance_model" = 1,
+                  "quanti_save_genotype" = 1,
+                  "stat" = "{q.adlt.l.freq.global}"
+                  
+                  )
+my_sim.base = new("simulation",sim.dir = "selection_position/", parameters = parameters)
+```
+
+```{r}
+my_sim <- my_sim.base
+my_sim@sim.name <- "pos_0"
+my_sim <- setParameter(my_sim, "selection_position", 1)
+success <- run(my_sim, verbose = F)
+```
+
+```{r}
+stat <- loadStat(my_sim)
+freqs = matrix(0, nrow = my_sim@parameters[["generations"]], ncol = 3)
+for(gen in 1:my_sim@parameters[["generations"]]){
+  geno = loadGeno(my_sim, generation = gen)
+  freqs[gen, ] = c(sum(geno == "11"),sum(geno == "11")+sum(geno == "12"),sum(geno == "22"))/ my_sim@parameters[["patch_capacity"]]
+}
+
+```
+
 

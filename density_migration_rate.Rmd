@@ -25,7 +25,7 @@ parameters = list(
   "patch_number" = 2,
   "stat" = "{adlt.nbInd_p}"
 )
-my_sim <- new("simulation", parameters = parameters)
+my_sim <- new("simulation", parameters = parameters,sim.dir = "density_migration_rate/")
 ```
 
 ## Simulation for a flat migration rate. 
@@ -110,7 +110,7 @@ stopifnot(sum(stay.diff^2) < 1000)
 This does probably not make much sens. Basically, when saturation of the patch is reach, half of the surnumerous individual leave and the other half stay. 
 
 ```{r}
-my_sim <- setParameter(my_sim, "dispersal_rate", 0.1) #should have no influence whatsoever
+my_sim <- setParameter(my_sim, "dispersal_rate", 0) #should have no influence whatsoever
 my_sim <- setParameter(my_sim, "dispersal_rate_model", 2)
 migrant = rep(0,200)
 stay = rep(0,200)
