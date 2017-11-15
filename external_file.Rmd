@@ -1,0 +1,39 @@
+---
+title: "Does external file as input work?"
+output:
+  html_document: default
+---
+
+the goal of this notebook is to check if we can put some parameters in an external file. 
+We just set an simulation with an external file and check if it works or not by looking into the statistic. 
+
+
+## loading package 
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+```
+
+#### setting general (common) parameters
+```{r}
+parameters = list("generations" = 100,
+                  "patch_capacity" = 100,
+                  "patch_number" = "$external_file.txt",
+                  "stat" = "{adlt.nbInd_p}"
+)
+write("5", "external_file/external_file.txt")
+my_sim <- new("simulation" ,sim.dir = "external_file/", parameters = parameters)
+```
+
+####Launching simulation
+```{r}
+result <- run(my_sim, verbose=F)
+```
+
+####Test   
+we just check that the statistic for the fifth patch exist and is correct. 
+```{r}
+stat <- loadStat(my_sim)
+stopifnot(stat$adlt.nbInd_p5[1]==100)
+```
+
+
