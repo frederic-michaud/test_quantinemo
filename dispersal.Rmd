@@ -145,6 +145,7 @@ res <- run(my_sim, verbose = FALSE)
 #### R parts
 ```{r}
 #num <- numeric(100)
+#num2 <- numeric(100)
 #for (k in 1:100){
 pops = c(15,rep(0,n.patch-1))
 popss <- matrix(rep(pops,n.iter),ncol = n.patch)
@@ -165,9 +166,9 @@ for (i in 1:(n.iter-1)){
   popss[i+1, ] <- pops
 }
 #num[k] <- sd(pops)
+#num2[k] <- mean(pops)
 #}
 ```
-
 
 
 
@@ -185,8 +186,8 @@ for (patch in 1:n.patch) {
   lines(Qn[[var]],col="red")  
     final.distrib[patch] = tail(Qn[[var]],1)
 }
-  stopifnot(sd(final.distrib)>20) #Testing with the R version, it's a cut at about 5%
-  stopifnot(sd(final.distrib)<2500) #Testing with the R version, it's a cut at about 5%
+ stopifnot(sd(final.distrib)/mean(final.distrib) < 1) #Testing with the R version, it's a cut at about 5%
+ stopifnot(sd(final.distrib)/mean(final.distrib) > 0.3) #Testing with the R version, it's a cut at about 5%
 ```
 
 
@@ -194,13 +195,13 @@ for (patch in 1:n.patch) {
 ####QuantiNemo part
 ```{r}
 my_sim  <- setParameter(my_sim,"dispersal_model",3)
-my_sim  <- setParameter(my_sim,"generations",50)
+my_sim  <- setParameter(my_sim,"generations",40)
 
 my_sim  <- setParameter(my_sim,"dispersal_lattice_range",0)
 my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
 ini_size = paste("{", paste(pops, collapse = " "),"}")
 my_sim  <- setParameter(my_sim,"patch_ini_size","{10 0 0 0 0 0 0 0 0 0 0 0}")
-my_sim  <- setParameter(my_sim,"replicates",100)
+my_sim  <- setParameter(my_sim,"replicates",500)
 my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
 my_sim@sim.name <- "2d_stepping_stone_4"
 sucess <- run(my_sim, verbose = FALSE)
@@ -209,13 +210,22 @@ We observe here the expected result for a 3x4 lattice. First a single patch is o
 ```{r}
 Qn  <- loadStat(my_sim)
 final.distrib = rep(0,n.patch)
-
+inter.distrib = rep(0,n.patch)
 plot( Qn[["adlt.nbInd_p01"]],col="red", log="y",ylim=c(0.1,1000),type="l",ylab = "Population size", xlab = "Generation")
-for (patch in 2:n.patch) {
+for (patch in 1:n.patch) {
   var = paste("adlt.nbInd_p",formatC(patch, width = 2,  flag = "0"),sep="")
   lines(Qn[[var]],col="red")  
     final.distrib[patch] = tail(Qn[[var]],1)
+    inter.distrib[patch] = Qn[[var]][15]
 }
+#Checking that within a distance, variance is small but inbetween, variance is high. 
+stopifnot(sd(sort(inter.distrib)[1:2]) < 0.2)
+stopifnot(sd(sort(inter.distrib)[3:7]) < 0.4)
+stopifnot(sd(sort(inter.distrib)[8:11]) < 0.7)
+stopifnot(sd(sort(inter.distrib)[1:2]) > 0.005)
+stopifnot(sd(sort(inter.distrib)[3:7]) > 0.01)
+stopifnot(sd(sort(inter.distrib)[8:11]) > 0.01)
+stopifnot(sd(sort(inter.distrib)[1:11]) > 1.6)
 ```
 
 ### 2d stepping stone with 8 neighbor
