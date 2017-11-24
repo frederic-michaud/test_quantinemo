@@ -256,37 +256,6 @@ for (patch in 2:n.patch) {
 }
 ```
 
-### Long range dispersal  
 
-Si on ne met pas de dispersal_rate, la population reste toujours sur le même patch, quelque soit la valeur de dispoersal_long_range_coef
-Si on met un dispersal_rate, la population décroit (p-e en m^g?) car la population ne reste pas sur les patchs. 
-Si on met un dispersal_rate = 1, ça semble fonctionner un peu mieux. Néanmoins, la pop disparait quand même.  
-```{r}
-my_sim = new("simulation",sim.dir = "dispersal/")
-my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",2)
-my_sim  <- setParameter(my_sim,"mean_fecundity",1.01)
-my_sim  <- setParameter(my_sim,"stat","{adlt.nbInd_p }")
-my_sim  <- setParameter(my_sim,"dispersal_model",4)
-my_sim  <- setParameter(my_sim,"patch_capacity",1000)
-my_sim  <- setParameter(my_sim,"generations",100)
-my_sim  <- setParameter(my_sim,"dispersal_rate",1)
-my_sim  <- setParameter(my_sim,"dispersal_long_range_coef",0.1)
-my_sim  <- setParameter(my_sim,"patch_ini_size","{rep(0,464) 1000 rep(0,435)}")
-my_sim  <- setParameter(my_sim,"patch_number",900)
-my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{30 30}")
-my_sim@sim.name <- "long_range"
-run(my_sim, verbose=F)
-```
-```{r}
-Qn  <- loadStat(my_sim)
-pop <- Qn[, 3:902]
-pop <- as.matrix(pop)
-rowSums(pop)
-```
-```{r}
-pop[1, 460:470]
-pop[2, 460:470]
-pop[3, 460:470]
-```
 
 
