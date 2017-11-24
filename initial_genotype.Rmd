@@ -51,12 +51,12 @@ success <- run(my_sim, verbose = F)
 ```{r}
 res <- loadPheno(my_sim, generation = 1)
 hist(res$V2, freq = FALSE)
+b=seq(-10,10,0.1)
 lines(b,dnorm(b,0,(2)),col="red")
 var(res$V2)
-stopifnot(var(res$V2)<4.1)
-stopifnot(var(res$V2)>3.9)
+stopifnot(var(res$V2)<4.15)
+stopifnot(var(res$V2)>3.85)
 res <- loadPheno(my_sim, generation = -1)
 hist(res$V2)
-
 ```
 
