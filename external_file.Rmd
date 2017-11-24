@@ -20,6 +20,7 @@ parameters = list("generations" = 100,
                   "patch_number" = "$external_file.txt",
                   "stat" = "{adlt.nbInd_p}"
 )
+dir.create("external_file")
 write("5", "external_file/external_file.txt")
 my_sim <- new("simulation" ,sim.dir = "external_file/", parameters = parameters)
 ```
