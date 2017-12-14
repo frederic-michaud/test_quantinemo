@@ -37,12 +37,13 @@ test <- function(component){
 ```
 
 ```{r}
-test("external_file")
+test("population_grow")
 ```
 
 
 ###Launching the test 
 ```{r}
+system2("../RQuantiNemo/quantiNemo2","--version")
 for(component in working.components){
   test(component)
 }

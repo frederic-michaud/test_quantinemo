@@ -49,8 +49,8 @@ genotype <- getGenotype(0.5, my_sim@parameters[["patch_number"]]*20) #we fix 20 
 my_sim <-  addFile(my_sim, "quanti_ini_genotypes",genotype )
 
 #selection
-my_sim  <- setParameter(my_sim,"patch_stab_sel_intensity","2")
-my_sim  <- setParameter(my_sim,"patch_stab_sel_optima","0.5")
+my_sim  <- setParameter(my_sim,"patch_stab_sel_intensity",2)
+my_sim  <- setParameter(my_sim,"patch_stab_sel_optima",0.5)
 my_sim  <- setParameter(my_sim,"quanti_selection_model",1)
 
 #statistique
