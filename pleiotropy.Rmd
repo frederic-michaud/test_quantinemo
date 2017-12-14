@@ -8,14 +8,20 @@ The goal of this notebook is to check if pleiotropy works. First step is to defi
 ### loading package and setting minimal simulation
 ```{r}
 devtools::load_all(pkg="../RQuantiNemo")
-parameters = list("generations" = 5,
-                  "patch_capacity" = 100,
+parameters = list("generations" = 3,
+                  "patch_capacity" = 100000,
+                  "mating_system" = 0,
                   "quanti_all" = 5,
                   "quanti_loci" = 2,
                   "quanti_nb_trait" = 2,
-                  "quanti_genome" = "{0 10 20}",
+                  "quanti_mutation_rate_1" = 0.1,
+#                  "quanti_mutation_rate_2" = 0.101,
+  #                "quanti_mutation_rate" = 0.2,
+                  "quanti_mutation_model" = 0,
+                  "quanti_ini_allele_model" = 1,
+                  "quanti_genome" = "{0 10 20 30}",
                   "quanti_locus_index_1" = "{1 2}",
-                  "quanti_locus_index_2" = "{2 3}", #loci 2 should be pleitropic because it appears in two traits
+                  "quanti_locus_index_2" = "{3 4}", #loci 2 should be pleitropic because it appears in two traits
                   "quanti_save_genotype" = 1)
 my_sim.base = new("simulation",sim.dir = "pleiotropy/", parameters = parameters)
 ```
@@ -28,10 +34,21 @@ my_sim.base = new("simulation",sim.dir = "pleiotropy/", parameters = parameters)
 ```{r}
 my_sim <- my_sim.base
 my_sim@sim.name <- "basic"
-run(my_sim, verbose =FALSE)
+run(my_sim, verbose =T)
 ```
 ####Checking resut
 ```{r}
-gene <- loadGeno(my_sim)
-stopifnot(gene$V3 == gene$V4)
+gene <- loadGeno(my_sim, generation = 2)
+l1 = cbind(as.numeric(sapply(gene$V2, substr,start = 1, stop = 1)),
+                    as.numeric(sapply(gene$V2, substr,start = 2, stop = 2)))
+l2 = cbind(as.numeric(sapply(gene$V3, substr,start = 1, stop = 1)),
+                    as.numeric(sapply(gene$V3, substr,start =2, stop = 2)))
+l3 = cbind(as.numeric(sapply(gene$V4, substr,start = 1, stop = 1)),
+                    as.numeric(sapply(gene$V4, substr,start =2, stop = 2)))
+l4 = cbind(as.numeric(sapply(gene$V5, substr,start = 1, stop = 1)),
+                    as.numeric(sapply(gene$V5, substr,start =2, stop = 2)))
+sum(l1!="3")/length(l1)
+sum(l2!="3")/length(l2)
+sum(l3!="3")/length(l3)
+sum(l4!="3")/length(l4)
 ```
