@@ -107,7 +107,6 @@ for (i in 1:(n.iter-1)){
 #### Ploting result
 The result are very similar. The lines are not perfectly align, which might seems strange, but this is due to fluctuation in the early stage of simulation. In on meta-pop, this compensate due to migration, but on two simulation, the overall population might be larger. 
 
-
 ```{r}
 Qn  <- loadStat(my_sim)
 plot(popss[, 1], type = "l", log="y",ylim = c(1,10000))
@@ -240,7 +239,6 @@ my_sim  <- setParameter(my_sim,"patch_ini_size","{10 0 0 0 0 0 0 0 0 0 0 0}")
 my_sim  <- setParameter(my_sim,"replicates",100)
 my_sim  <- setParameter(my_sim,"dispersal_lattice_dims","{3 4}")
 my_sim@sim.name <- "2d_stepping_stone_8"
-writeInput(my_sim)
 run(my_sim, verbose = FALSE)
 ```
 We observe here the expected result for a 3x4 lattice. First a single patch is occupied. Then the eight first neighboor are occupied and then the three last patch. 
@@ -256,6 +254,38 @@ for (patch in 2:n.patch) {
 }
 ```
 
+### Propagule-pool Island model
+####QuantiNemo part
+```{r}
+my_sim  <- my_sim.base
+my_sim  <- setParameter(my_sim,"dispersal_model",1)
+my_sim  <- setParameter(my_sim,"patch_capacity",1000)
+my_sim  <- setParameter(my_sim,"mating_nb_offspring_model",0)
+my_sim  <- setParameter(my_sim,"dispersal_propagule_prob",1)
+my_sim  <- setParameter(my_sim,"patch_number",6)
+my_sim  <- setParameter(my_sim,"generations",2)
+my_sim  <- setParameter(my_sim,"replicates",1)
+my_sim  <- setParameter(my_sim,"dispersal_rate",0.2)
+my_sim  <- setParameter(my_sim,"seed","{10 25}")
+my_sim@sim.name <- "propagule"
+success <- run(my_sim, verbose = F)
+```
 
+```{r}
+Qn  <- loadStat(my_sim)
+var <- "adlt.nbInd_p1"
+plot( Qn[[var]],col="red",ylim=c(500,1500),type="b",ylab = "Population size", xlab = "Generation")
+final.distrib = rep(0,6)
+final.distrib[1] = tail(Qn[[var]],1)
+for (patch in 2:6) {
+  var = paste("adlt.nbInd_p",formatC(patch, width = 1,  flag = "0"),sep="")
+  lines(Qn[[var]],col="red")  
+  points(Qn[[var]],col="red")
+  final.distrib[patch] = tail(Qn[[var]],1)
+}
+#The reason for this statistical test is the following. If we have 6 patch, it is likely that some patches will receive two waves of migration, and some none. As about 0.2*1000 = 200 migrant moves together, some patches will have arround 1200 individuals (or even 1400 or more), and some arround 800. The standard deviation will therefore be large. On the contrary, if we move individual one by one, we do not expect to see so large differences.
+stopifnot(sd(final.distrib)>100)
+stopifnot(final.distrib == c(813,1206,799,783,1206,1193))
+```
 
 
