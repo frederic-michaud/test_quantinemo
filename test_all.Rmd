@@ -37,7 +37,7 @@ test <- function(component){
 ```
 
 ```{r}
-test("dispersal")
+test("fitness_landscape")
 ```
 
 

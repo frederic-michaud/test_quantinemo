@@ -162,7 +162,7 @@ res &lt;- ks.test(all.sample.th, all.sample)</code></pre>
 <pre><code>## Warning in ks.test(all.sample.th, all.sample): p-value will be approximate
 ## in the presence of ties</code></pre>
 <pre class="r"><code>res$p.value</code></pre>
-<pre><code>## [1] 0.999731</code></pre>
+<pre><code>## [1] 0.7698935</code></pre>
 <pre class="r"><code>stopifnot(res$p.value &gt; 0.01)</code></pre>
 </div>
 </div>
@@ -231,7 +231,7 @@ for (i in 1:nb.rep){
 }
 #deviation should be arround 1(sqrt(2)/sqrt(2))
 sd(phenotype.2s)</code></pre>
-<pre><code>## [1] 0.9548925</code></pre>
+<pre><code>## [1] 1.041811</code></pre>
 <pre class="r"><code>stopifnot(sd(phenotype.2s) &gt; 0.85)
 stopifnot(sd(phenotype.2s) &lt; 1.15)</code></pre>
 </div>

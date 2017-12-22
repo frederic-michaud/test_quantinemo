@@ -32,11 +32,11 @@ my_sim.base = new("simulation",sim.dir = "fitness_landscape/", parameters = para
 ```{r}
 my_sim = my_sim.base
 my_sim@sim.name <- "two_pick"
-patch_fitness_landscape = "{0.00 0.05 0.72 0.72 0.05 0.00 0.05 0.72 0.72 0.05 0.00}"
-patch_phenotype_landscape = "{-4.0 -3.2 -2.1 -1.9 -0.8 0.0 0.8 1.9 2.1 3.2 4.0}"
+quanti_fitness_landscape = "{0.00 0.05 0.72 0.72 0.05 0.00 0.05 0.72 0.72 0.05 0.00}"
+quanti_phenotype_landscape = "{-4.0 -3.2 -2.1 -1.9 -0.8 0.0 0.8 1.9 2.1 3.2 4.0}"
 
-my_sim <- setParameter(my_sim, "patch_fitness_landscape", patch_fitness_landscape)
-my_sim <- setParameter(my_sim, "patch_phenotype_landscape ", patch_phenotype_landscape)
+my_sim <- setParameter(my_sim, "quanti_fitness_landscape", quanti_fitness_landscape)
+my_sim <- setParameter(my_sim, "quanti_phenotype_landscape ", quanti_phenotype_landscape)
 run(my_sim, verbose = F)
 ```
 
@@ -44,8 +44,8 @@ run(my_sim, verbose = F)
 
 We expect the final phenotype to be either close to 2 or close to -2 
 ```{r}
-pfl <- as.numeric(unlist(strsplit(gsub("\\{|\\}","",patch_fitness_landscape)," ")))
-ppl <- as.numeric(unlist(strsplit(gsub("\\{|\\}","",patch_phenotype_landscape)," ")))
+pfl <- as.numeric(unlist(strsplit(gsub("\\{|\\}","",quanti_fitness_landscape)," ")))
+ppl <- as.numeric(unlist(strsplit(gsub("\\{|\\}","",quanti_phenotype_landscape)," ")))
 plot(ppl, pfl, type = "b", main = "Fitness Landscape", xlab = "phenotype", ylab = "Fitness")
 
 gen <- loadStatRep(my_sim)
