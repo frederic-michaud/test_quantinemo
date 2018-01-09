@@ -1,0 +1,175 @@
+---
+title: "Comparing different mutation model"
+output:
+  html_document: default
+---
+
+This notebook aim to test the different mutation model, and test if the do what they are supposed to do. 
+In the first part, we set a large population, and check that, starting from a monomorphic distribution, after one generation, the distribution is what it is expected to be. 
+
+In the second part, we check after more generation if this still hold, in particular for the mutation model where we expect to see different result (RMM and IMM).
+
+
+```{r}
+devtools::load_all("../RQuantiNemo")
+```
+####General parameters
+```{r}
+parameters = list("patch_capacity" = 100000,
+                  "generations" = 2,
+                  "quanti_loci" = 1,
+                  "quanti_all" = 101,
+                  "quanti_mutation_rate" = 0.1,
+                  "quanti_ini_allele_model" = 1,
+                  "quanti_save_genotype" = 1
+                  )
+my_sim.base = new("simulation", parameters = parameters, sim.dir = "mutation_model/")
+#quanti_allelic_file = data.frame(col_locus = rep(1,101),col_allele = seq(1,101,1),col_mut_freq = c(rep(c(0,1),50),0))
+#my_sim = addFile(my_sim,"quanti_allelic_file",quanti_allelic_file)
+```
+## First part: after one episode of breeding
+#### Testing the RMM model   
+In the RMM (random mutation model) model, the effect of the new allele is randomly drawn from a gaussian distribution, with a mean given by a reference allele. In quantiNemo where the allelic value are equally spaced, this is simulated by having a higher probability to mutate to a allele with a value close to the reference value than to one far from this reference. We therefore expect after one generation to see a gaussian centered arround the central allele when plotting the allele frequency.   
+The factor 12 comes from $\pm 6 \sigma$ with $\sigma= 1$ in our case. 
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 0)
+my_sim@sim.name <- "RMM"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+geno = loadGeno(my_sim)
+geno = as.numeric(c(sapply(geno[, 2],substr, start = 1 ,stop = 3),sapply(geno[, 2],substr, start = 4 ,stop = 6)))
+geno.freq <-  as.data.frame(table(geno))
+geno.freq[geno.freq$geno==51,2] <- geno.freq[geno.freq$geno==52,2] #changing the value of the peak coming from monomorphic distribution (very crude way)
+table.content <- as.numeric(as.vector(geno.freq$geno))
+plot(table.content,geno.freq$Freq,type = "p",xlab ="Allele index",ylab = "Number of allele")
+expected.values <-20000*dnorm(table.content,mean = 51, sd =101/12)
+lines(table.content,expected.values)
+relative.error <- sum((geno.freq$Freq -expected.values)^2)/sum(expected.values)^2
+stopifnot(relative.error<0.0001) # value 0.0001 is a bit arbitrary, but works well. 
+                                # Notice that changing 51 to 50, we are above it
+                                # So it is actually rather strong test. 
+
+```
+
+#### Testing the IMM model
+The IMM (incremental mutation model) works like the RMM model, except that the allelic value has to be close to the previous one, and not from a reference one. After one generation, there is therefore no difference since the reference allele is the same as the previous one. On long term, this does make a difference however. Notice also that in this case, quantiNemo change the space between the mutation. 
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 1)
+my_sim@sim.name <- "IMM"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+geno = loadGeno(my_sim)
+geno = as.numeric(c(sapply(geno[, 2],substr, start = 1 ,stop = 3),sapply(geno[, 2],substr, start = 4 ,stop = 6)))
+geno.freq <-  as.data.frame(table(geno))
+geno.freq[geno.freq$geno==51,2] <- geno.freq[geno.freq$geno==52,2] #changing the value of the peak coming from monomorphic distribution (very crude way)
+table.content <- as.numeric(as.vector(geno.freq$geno))
+plot(table.content,geno.freq$Freq,type = "p",xlab ="Allele index",ylab = "Number of allele")
+expected.values <-20000*dnorm(table.content,mean = 51, sd =101/40)
+lines(table.content,expected.values)
+relative.error <- sum((geno.freq$Freq -expected.values)^2)/sum(expected.values)^2
+stopifnot(relative.error<0.002) # value 0.002 is a bit arbitrary, but works well. 
+                                # Notice that changing 51 to 50, we are above it
+                                # So it is actually rather strong test. 
+```
+
+#### Testing the KAM model
+The Kam (K-Allele model) model is the most trivial one. In this case, the allele to mutate to is simply randomly selected amoung any allele with the same probability for any allele. We expect therefore to see a flat distribution after one generation. 
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 2)
+my_sim@sim.name <- "KAM"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+geno = loadGeno(my_sim)
+geno = as.numeric(c(sapply(geno[, 2],substr, start = 1 ,stop = 3),sapply(geno[, 2],substr, start = 4 ,stop = 6)))
+geno.freq <-  as.data.frame(table(geno))
+geno.freq[geno.freq$geno==51,2] <- geno.freq[geno.freq$geno==52,2] #changing the value of the peak coming from monomorphic distribution (very crude way)
+table.content <- as.numeric(as.vector(geno.freq$geno))
+plot(table.content,geno.freq$Freq,type = "p",xlab ="Allele index",ylab = "Number of allele",ylim=c(0,300))
+expected.values <-20000*dunif(table.content,min = 1, max =101)
+lines(table.content,expected.values)
+relative.error <- sum((geno.freq$Freq -expected.values)^2)/sum(expected.values)^2
+relative.error 
+stopifnot(relative.error<1.e-4) # value 1.e-4 is a bit arbitrary, but works well. 
+                                # Notice that changing 1 to 2, we are above it
+                                # So it is actually rather strong test. 
+```
+
+#### Testing the SSM model
+In the SSM (single step mutation) model, the mutation can only occur to neighbor allele
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 3)
+my_sim@sim.name <- "SSM"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+geno = loadGeno(my_sim)
+geno = as.numeric(c(sapply(geno[, 2],substr, start = 1 ,stop = 3),sapply(geno[, 2],substr, start = 4 ,stop = 6)))
+geno.freq <-  as.data.frame(table(geno))
+table.content <- as.numeric(as.vector(geno.freq$geno))
+plot(table.content,geno.freq$Freq,type = "p",xlab ="Allele index",ylab = "Number of allele")
+expected.values <-200000*0.05^abs((51-table.content))
+lines(table.content,expected.values)
+relative.error <- sum((geno.freq$Freq -expected.values)^2)/sum(expected.values)^2
+relative.error 
+stopifnot(relative.error<1.e-2) # value 1.e-2 is a bit arbitrary, but works well. 
+```
+
+
+
+## Second part: after many breeding   
+Here we want to check that after many generation, the mean phenotype in the case of RMM stay arround 0, while for IMM it goes to an arbitrary value.
+####General parameters
+```{r}
+parameters = list("patch_capacity" = 1000,
+                  "generations" = 10000,
+                  "quanti_loci" = 1,
+                  "quanti_all" = 101,
+                  "quanti_mutation_rate" = 0.1,
+                  "quanti_ini_allele_model" = 1,
+                  "stat_log_time" = 25,
+                  "stat" = "{q.meanG_p}"
+                  )
+my_sim.base = new("simulation", parameters = parameters, sim.dir = "mutation_model/")
+#quanti_allelic_file = data.frame(col_locus = rep(1,101),col_allele = seq(1,101,1),col_mut_freq = c(rep(c(0,1),50),0))
+#my_sim = addFile(my_sim,"quanti_allelic_file",quanti_allelic_file)
+```
+### First part: after one episode of breeding
+#### RMM case     
+We expect the genotype to remain arround 0 (variance within the population is 1)
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 0)
+my_sim@sim.name <- "RMM_many_generation"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+stat = loadStat(my_sim)
+plot(seq(1,10000,25),stat$q.meanG,type="l",xlab = "generation", ylab = "mean genotypic value")
+stopifnot(var(stat$q.meanG)<0.1)
+```
+#### IMM case     
+We expect the genotype to go away from 0 (variance within the population is 1 at the beggining of the simulation)
+```{r}
+my_sim =  setParameter(my_sim.base,"quanti_mutation_model", 1)
+my_sim@sim.name <- "IMM_many_generation"
+sucess <- run(my_sim, verbose = F)
+```
+
+
+```{r}
+stat = loadStat(my_sim)
+plot(seq(1,10000,25),stat$q.meanG,type="l",xlab = "generation", ylab = "mean genotypic value")
+stopifnot(var(stat$q.meanG)>10)
+```
