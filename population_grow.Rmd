@@ -64,11 +64,13 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",2)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
+my_sim <- setParameter(my_sim,"seed",150)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
 pop <-  numeric(length=generations)
 pop[1]=ini.size
+set.seed(123)
 for (i in 2:generations)
 {
   pop[i] <-  rpois(1,pop[i-1]*grow.rate)
@@ -83,8 +85,7 @@ pop.sim <- tail(stats$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 diff <- pop.sim/pop.exp
 print(abs(log(pop.sim)-log(pop.exp)))
-stopifnot(abs(log(pop.sim)-log(pop.exp))<1.5)
-
+stopifnot(abs(log(pop.sim)-log(pop.exp))<0.6)
 ```
 
 # Round(N*fertility)  
@@ -155,11 +156,13 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",4)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
+my_sim <- setParameter(my_sim,"seed",126)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
 pop <-  numeric(length=generations)
 pop[1]=ini.size
+set.seed(123)
 for (i in 2:generations)
 {
   pop[i] <-  floor(grow.rate*pop[i-1]) + rbinom(1,1,(pop[i-1]*grow.rate - as.integer(pop[i-1]*grow.rate)))
@@ -173,7 +176,7 @@ col=c("blue","red")) # gives the legend lines the correct color and width
 pop.sim <- tail(stats$adlt.nbInd,1)
 pop.exp <- tail(pop,1)
 diff <- pop.sim/pop.exp
-stopifnot(abs(log(pop.sim)-log(pop.exp))<0.6)
+stopifnot(abs(log(pop.sim)-log(pop.exp))<0.1)
 ```
 
 # Poisson(N*fertility) with a cut at patch_capacity
@@ -187,16 +190,19 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",5)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"mean_fecundity",grow.rate)
+my_sim <- setParameter(my_sim,"seed",123)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
 pop <-  numeric(length=generations)
 pop[1]=ini.size
+set.seed(124)
 for (i in 2:generations)
 {
   pop[i] <-  rpois(1,pop[i-1]*grow.rate)
+  pop[pop>1000] = 1000
 }
-pop[pop>1000] = 1000
+
 plot(res,xlim = c(0,generations),ylim = c(5,10*grow.rate^generations),xlab = "generation",ylab = "Population size",main = "Evolution of the population size",log="y",type = "l",col="red")
 lines(pop,col="blue")
 legend("topleft",legend = c("Expected","QuantiNemo"),
@@ -315,6 +321,7 @@ my_sim <- setParameter(my_sim,"mating_nb_offspring_model",9)
 my_sim <- setParameter(my_sim,"generations",generations)
 my_sim <- setParameter(my_sim,"patch_ini_size",ini.size)
 my_sim <- setParameter(my_sim,"growth_rate",r)
+my_sim <- setParameter(my_sim,"seed",100)
 output <- run(my_sim, verbose = FALSE)
 stats<- loadStat(my_sim)
 res <- stats$adlt.nbInd
@@ -325,12 +332,13 @@ plot(res,type="l",xlim = c(0,generations),ylim=c(0,1000),xlab = "generation",yla
 
 pop = seq(1:generations)
 pop[1] <- ini.size
+set.seed(100)
 for (i in 2:generations){pop[i] <- rpois(1,f(pop[i-1],1000,r))}
 lines(pop,col="blue")
 legend("topleft",legend = c("Expected","QuantiNemo"),
 lty=c(1,1), # gives the legend appropriate symbols (lines)
 lwd=c(2.5,2.5),
 col=c("blue","red")) # gives the legend lines the correct color and width
-stopifnot(TRUE)
+stopifnot(tail(pop,1)-tail(res,1)<75)
 ```
 
