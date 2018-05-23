@@ -1,0 +1,71 @@
+---
+title: "Does the different type of selection work?"
+output:
+  html_document: default
+---
+
+the goal of this notebook is to check whether we can have more than 255 alleles. To do so, we will just perform two simulation, one with a neutral locus and another with a quantitative locus, containing 1000 alleles. We then check that the initial distribution of allele is what is expected if we have 1000 allele. 
+
+
+## loading package and setting minimal simulation
+```{r}
+devtools::load_all(pkg="../RQuantiNemo")
+```
+
+
+#### setting general (common) parameters   
+To check that the initial distribution of allele is correct, we will take 10'000 individual all in the same patch with a single locus containing 1000 locus. We then need to save the genotype. 
+```{r}
+my_sim.base <- new("simulation" ,sim.dir = "more_allele/")
+
+#general pop
+my_sim.base  <- setParameter(my_sim.base,"generations",10)
+my_sim.base  <- setParameter(my_sim.base,"patch_capacity",10000)
+```
+
+
+
+###Neutral case
+In this case, we set one neutral locus with 1000 allele. At the begining of the simulation, we expect the distribution to be uniform. 
+```{r}
+my_sim.neutral <- my_sim.base
+my_sim.neutral@sim.name <- "neutral"
+#loci
+my_sim.neutral  <- setParameter(my_sim.neutral,"ntrl_loci",1)
+my_sim.neutral  <- setParameter(my_sim.neutral,"ntrl_all",1000)
+my_sim.neutral  <- setParameter(my_sim.neutral,"ntrl_save_genotype",1)
+result <- run(my_sim.neutral, verbose=F)
+```
+
+```{r}
+result <- run(my_sim.neutral, verbose=F)
+geno <- loadGeno(my_sim.neutral,generation = 1)
+all.allele <- c(as.numeric(sapply(geno$V2, substr,start = 1,stop = 4)),
+                as.numeric(sapply(geno$V2, substr,start = 5,stop = 8)))
+hist <- hist(all.allele)
+test <- ks.test(all.allele,"punif",0,1000)
+stopifnot(test$p.value > 0.01)
+```
+###quantitative case
+In this case, we set one neutral locus with 1000 allele. At the begining of the simulation, we expect the distribution to be uniform. 
+```{r}
+my_sim.quanti <- my_sim.base
+my_sim.quanti@sim.name <- "quanti"
+#loci
+my_sim.quanti  <- setParameter(my_sim.quanti,"quanti_loci",1)
+my_sim.quanti  <- setParameter(my_sim.quanti,"quanti_all",1000)
+my_sim.quanti  <- setParameter(my_sim.quanti,"quanti_save_genotype",1)
+result <- run(my_sim.neutral, verbose=F)
+```
+
+#Checking if distribution is normam
+```{r}
+geno <- loadGeno(my_sim.quanti,generation = 1)
+all.allele <- c(as.numeric(sapply(geno$V2, substr,start = 1,stop = 4)),
+                as.numeric(sapply(geno$V2, substr,start = 5,stop = 8)))
+hist(all.allele)
+test <- shapiro.test(all.allele[1:5000])
+test$p.value
+stopifnot(test$p.value > 0.05)
+```
+
