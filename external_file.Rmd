@@ -34,7 +34,7 @@ result <- run(my_sim, verbose=F)
 we just check that the statistic for the fifth patch exist and is correct. 
 ```{r}
 stat <- loadStat(my_sim)
-stopifnot(stat$adlt.nbInd_p5[1]==100)
+stopifnot(!is.null(stat$adlt.nbInd_p5[1]))
 ```
 
 

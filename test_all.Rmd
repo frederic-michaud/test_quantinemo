@@ -5,7 +5,7 @@ title: "Launching all test"
 ### Defining components
 ```{r}
 working.components =  c("cloning", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level", "sex_determination", "density_migration_rate", "stat_sampling",
-                        "macro", "random_per_replicate","initial_genotype", "coalescence", "external_file")
+                        "macro", "random_per_replicate","initial_genotype", "coalescence", "external_file","mutation_model")
 not.working.components = c("female_sex_allocation",  "friction", "pleiotropy")
 components = c(working.components, not.working.components)
 ```
@@ -37,13 +37,13 @@ test <- function(component){
 ```
 
 ```{r}
-test("fitness_landscape")
+test("selection_level")
 ```
 
 
 ###Launching the test 
 ```{r}
-system2("../RQuantiNemo/quantiNemo2","--version")
+system2("../RQuantiNemo/quantinemo","--version")
 for(component in working.components){
   test(component)
 }

@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+setwd("~/git/pegas/pegas/")
+devtools::load_all()
+#library(pegas)
+library(adegenet)
+library(hierfstat)
+```
+
+
+```{r}
+my_loci <- read.vcf("~/snip/first_contig.vcf",from = 1,to = 10000)
+my_genind <- loci2genind(my_loci)
+population.label <- read.csv("~/Downloads/fullcov_ind_desc_012.csv")
+my_genind$pop <- population.label$crete_pop
+my_hierfstat <- genind2hierfstat(my_genind,pop=NULL)
+my_hierfstat[,1] <- as.integer(my_hierfstat[,1]) # convert number into factor
+```
+
+
+
+
+```{r}
+x<-indpca(my_hierfstat,ind.labels=population.label$crete_pop)
+```
+
+```{r}
+plot(x,eigen=F,ax1=1,ax2=2)
+```
+
+
+```{r}
+pegas::LD2(my_loci,locus = c(10,11),details = T)
+```
+
+```{r}
+data(gtrunchier)
+str(eucl.dist(gtrunchier[,-1]))
+```
+
+```{r}
+dico=read.table("../../snip/dico.txt")
+my_hist <- hist(log(dico$V2))
+res=c()
+for (i in 1:length(my_hist$counts))
+{
+   cond=(dico$V2>exp(my_hist$breaks[i]))*(dico$V2<exp(my_hist$breaks[i+1]))
+   res=c(res,sum(just_dico$V2[which(cond==1)]))
+   print(sum(cond))
+}
+plot(exp(my_hist$mids),res,log="xy")
+```
+
+```{r}
+tab(nancycats)
+```
+```{r}
+test.eucl <- function (data, allloc = FALSE, distance = "eucl") 
+{
+  nbloc <- dim(data)[2] - 1
+  nbpop <- max(data[, 1])
+  euclmat <- matrix(nrow = (nbpop * (nbpop - 1)/2), ncol = nbloc)
+  for (i in 1:nbloc) {
+    eff <- apply(table(data[, (i + 1)], data[, 1]), 2, sum, 
+      na.rm = TRUE)
+    freq <- sweep(table(data[, (i + 1)], data[, 1]), 2, 
+      eff, FUN = "/")
+    eucl <- t(freq) %*% freq
+    dum <- 0
+    for (j in 2:nbpop) {
+      for (k in 1:(j - 1)) {
+        dum <- dum + 1
+        euclmat[dum, i] <- eucl[j, j] + eucl[k, k] - 
+          2 * eucl[j, k]
+      }
+    }
+  }
+  x <- apply(euclmat, 1, sum, na.rm = TRUE)
+  euclmat <- cbind(euclmat, x)
+  if (allloc) {
+    return(euclmat^0.5)
+  }
+  else {
+    return(x^0.5)
+  }
+}
+
+```
+
+```{r}
+fstat.nancycats <- genind2hierfstat(nancycats) 
+fstat.nancycats[, 1] <- as.integer(fstat.nancycats[, 1] )
+eucl.dist(fstat.nancycats) #does not work
+```
+
+
+```{r}
+my_loci <- read.vcf("~/Desktop/example2.vcf")
+```
+
+```{r}
+View(my_loci[,1:200])
+```
+
+
+```{r}
+my_loci <- read.vcf("~/snip/example2.vcf") #file with some SNP without polymorphim...
+# For example, at locus 200, all individuals are G/G
+my_genind <- loci2genind(my_loci) 
+dim(my_genind$tab)
+nLoc(my_genind)
+Plot(my_genind)
+```
+
+```{r}
+ x <- as.loci( c("A/A", "A/B", "A/A", "B/B"))
+my_genind <- loci2genind(x) 
+glPlot(my_genind)
+```
+
+

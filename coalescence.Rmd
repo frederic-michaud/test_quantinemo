@@ -168,13 +168,13 @@ alleles.2 =names(pop2)
 
 
 ```{r}
-my_sim  <- setParameter(my_sim,"coalescence",1)
+my_sim  <- setParameter(my_sim,"coalescence",0)
 dispersal.rates = c(0.001,0.005,0.01,0.05,0.1)
 dispersal.rates = 0.5^seq(2,9)
 distance.per.rate.fwd = c()
 for (dispersal.rate in dispersal.rates){
   my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
-  n.rep = 10
+  n.rep = 25
   distances = c()
   for(rep in 1:n.rep){
     res <- run(my_sim, verbose = F)
@@ -191,11 +191,12 @@ for (dispersal.rate in dispersal.rates){
 ```
 
 ```{r}
-my_sim  <- setParameter(my_sim,"coalescence",0)
+my_sim  <- setParameter(my_sim,"coalescence",1)
 distance.per.rate.bkw = c()
 for (dispersal.rate in dispersal.rates){
   my_sim  <- setParameter(my_sim,"dispersal_rate",dispersal.rate)
-  n.rep = 10
+
+  n.rep = 25
   distances = c()
   for(rep in 1:n.rep){
     res <- run(my_sim, verbose = F)
@@ -212,9 +213,10 @@ for (dispersal.rate in dispersal.rates){
 ```
 
 ```{r}
-plot(dispersal.rates, distance.per.rate.fwd, log = "x", type = "b",ylim = c(0,100),xlab = "migration rate", ylab = "distance", main = "comparing the distance for forward and backward simulation")
-points(dispersal.rates, distance.per.rate.bkw, pch=2)
-stopifnot(sum((distance.per.rate.bkw - distance.per.rate.fwd)^2)<600)
 sum((distance.per.rate.bkw - distance.per.rate.fwd)^2)
+plot(dispersal.rates, distance.per.rate.fwd, log = "x", type = "b",ylim = c(0,100),xlab = "migration rate", ylab = "distance", main = "comparing the 
+    distance for forward and backward simulation")
+points(dispersal.rates, distance.per.rate.bkw, pch=3)
+stopifnot(sum((distance.per.rate.bkw - distance.per.rate.fwd)^2)<600)
 ```
 
