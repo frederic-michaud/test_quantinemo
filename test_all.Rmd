@@ -45,7 +45,7 @@ test("more_allele")
 
 ###Launching the test 
 ```{r}
-system2("../RQuantiNemo/quantinemo","--version")
+system2("../RQuantiNemo/quantinemo.mac","--version")
 for(component in working.components){
   test(component)
 }

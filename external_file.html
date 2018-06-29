@@ -319,8 +319,9 @@ $(document).ready(function () {
                   &quot;patch_number&quot; = &quot;$external_file.txt&quot;,
                   &quot;stat&quot; = &quot;{adlt.nbInd_p}&quot;
 )
-dir.create(&quot;external_file&quot;)
-write(&quot;5&quot;, &quot;external_file/external_file.txt&quot;)
+dir.create(&quot;external_file&quot;)</code></pre>
+<pre><code>## Warning in dir.create(&quot;external_file&quot;): 'external_file' already exists</code></pre>
+<pre class="r"><code>write(&quot;5&quot;, &quot;external_file/external_file.txt&quot;)
 my_sim &lt;- new(&quot;simulation&quot; ,sim.dir = &quot;external_file/&quot;, parameters = parameters)</code></pre>
 <p>####Launching simulation</p>
 <pre class="r"><code>result &lt;- run(my_sim, verbose=F)</code></pre>

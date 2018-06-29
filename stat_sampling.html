@@ -341,7 +341,7 @@ res &lt;- ks.test(all.sample.th, all.sample)</code></pre>
 <pre><code>## Warning in ks.test(all.sample.th, all.sample): p-value will be approximate
 ## in the presence of ties</code></pre>
 <pre class="r"><code>res$p.value</code></pre>
-<pre><code>## [1] 0.9780359</code></pre>
+<pre><code>## [1] 0.9347322</code></pre>
 <pre class="r"><code>stopifnot(res$p.value &gt; 0.01)</code></pre>
 </div>
 <div id="sampling-only-over-a-definite-set-of-patch" class="section level3">
@@ -405,7 +405,7 @@ for (i in 1:nb.rep){
 }
 #deviation should be arround 1(sqrt(2)/sqrt(2))
 sd(phenotype.2s)</code></pre>
-<pre><code>## [1] 0.9311808</code></pre>
+<pre><code>## [1] 1.033923</code></pre>
 <pre class="r"><code>stopifnot(sd(phenotype.2s) &gt; 0.85)
 stopifnot(sd(phenotype.2s) &lt; 1.15)</code></pre>
 <p>####half_population</p>
