@@ -37,7 +37,7 @@ test <- function(component){
 ```
 
 ```{r}
-test("selection_level")
+test("more_allele")
 ```
 
 
