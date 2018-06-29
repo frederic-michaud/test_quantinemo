@@ -2,6 +2,10 @@
 title: "Launching all test"
 ---
 
+This notebook allow to launch all test in an automatic way and tell you which one fails and which one succeed.    
+
+Due to the stochastic component of quantiNemo, some test might fail even if the component is actually working. Typically, when launching the entire set of test, 0 to 5 test might fail. If so, I recommand to relaunch the test which didn't pass, and if they fail more than twice/three time in a row, go investigate into the corresponding notebook to see where the problem comes from. 
+
 ### Defining components
 ```{r}
 working.components =  c("cloning", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level", "sex_determination", "density_migration_rate", "stat_sampling",
@@ -9,8 +13,6 @@ working.components =  c("cloning", "dispersal", "population_grow", "extinction",
 not.working.components = c("female_sex_allocation",  "friction", "pleiotropy")
 components = c(working.components, not.working.components)
 ```
-
-
 
 
 ###Cleaning all files
