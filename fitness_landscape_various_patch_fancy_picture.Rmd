@@ -1,0 +1,120 @@
+---
+title: "Testing the fitness landscape on various patch"
+output:
+html_document: default
+---
+
+This notebook test if we can draw an arbitrary fitness landscape for defining how we translate phenotype value into fitness for various patch. 
+
+We do this using by trying to draw an image using a heatmap of the phenotype. 
+
+### In case it is not working, install some stupid package
+```{r,eval = FALSE}
+install.packages('gifski')
+install.packages("png")
+if (packageVersion('knitr') < '1.20.14') {
+  remotes::install_github('yihui/knitr')
+}
+```
+
+### Loading packages
+```{r}
+devtools::load_all(path="../rquantinemo")
+library(png)
+```
+### Reading an input image
+```{r}
+Image <- readPNG("sam.png")
+dim1 <-  dim(Image)[1]
+dim2 <-  dim(Image)[2]
+```
+
+### Defining the fitness landscape    
+We just take a landscape which follow a Gaussian (stabilizing selection) with the highest value given by the value of the pixel of the picture.
+```{r}
+phenotype_reduce <- seq(-1,1,0.01)
+landscape = matrix(rep(0,dim1*dim2*201),ncol=201)
+for (x in 1:dim1){
+  for (y in 1:dim2){
+      landscape[(x -1) * dim2 + y, ] <-  exp(-(1-2*Image[x,y] - phenotype_reduce)**2/1.5)
+  }
+}
+phenotype = matrix(rep(0,dim1*dim2*201),ncol=201)
+for (x in 1:dim1){
+  for (y in 1:dim2){
+          phenotype[(x -1) * dim2 + y, ] <-phenotype_reduce
+  }
+}
+```
+
+
+### Writting the phenotype landscape into file readable by Qn
+```{r}
+write_matrix_quanti <- function(input.matrix, file.name){
+  write("{", file = file.name)
+  for (i in 1:(nrow(input.matrix))){
+    write("{", file = file.name,append=TRUE)
+    write(paste(input.matrix[i,], " "), file = file.name,append=TRUE)
+    write("}", file = file.name,append=TRUE)
+  }
+  write("}", file = file.name,append=TRUE)
+}
+sim.dir = "fitness_landscape_various_patch/"
+dir.create(sim.dir)
+write_matrix_quanti(t(landscape), paste(sim.dir, "/landscape.txt",sep=""))
+write_matrix_quanti(t(phenotype), paste(sim.dir, "/phenotype.txt",sep=""))
+```
+
+### Setting the parameters for the simulation    
+
+We are simulating a square of patch of dimension dim1 x dim2 (see image size). The selected phenotype depend on the picture uploaded.
+For the first 30 generations, we have no migration. We then turn on migration for 20 generations. 
+
+```{r}
+nb.generation = 30
+nb.loci = 100
+parameters = list("generations" = nb.generation,
+                  "patch_number" = dim1*dim2,
+                  "patch_capacity" = 100,
+                  "quanti_loci" = nb.loci,
+                  "quanti_all" = 2,
+                  "quanti_selection_model" = 3,
+                  "quanti_save_phenotype" = 1,
+                  "dispersal_model" = 3,
+                  "dispersal_border_model" = 1,
+                  "dispersal_lattice_dims" =paste(c("{",dim2, dim1,"}"),collapse = " "),
+                  "dispersal_rate" = "(1 0, 20 0.9 )",
+                  "quanti_fitness_landscape" =  "$landscape.txt",
+                  "quanti_phenotype_landscape" = "$phenotype.txt"
+)
+my_sim.base = new("simulation",sim.dir = sim.dir, parameters = parameters)
+```
+
+### Creating and adding the allelic file
+```{r}
+allele_distrib = data.frame("col_locus" =  rep(seq(1,nb.loci,1),each = 2),
+                          "col_allele" =  rep(c(1,2),nb.loci),
+                          "col_allelic_value" = rep(c(0.005,-0.005),nb.loci), 
+                          "col_ini_freq" =rep(0.5,2*nb.loci))
+my_sim.base <-  addFile(my_sim.base, "quanti_allelic_file",allele_distrib)
+```
+
+### Running the simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "beautiful_picture"
+run(my_sim, verbose = T)
+```
+
+### Analysing results   
+We then load the phenotype and compute the mean phenotype per patch. By plotting a heatmap of the phenotype, we retrieve the initial image. Fantastic, no?
+```{r, animation.hook='gifski'}
+for (generation in 1:nb.generation){
+  geno <- loadPheno(my_sim,generation = generation)
+  geno_per_patch = matrix(geno[,2],nrow = 100)
+  all_mean <- colMeans(geno_per_patch)
+  squared.pheno <- matrix(all_mean, ncol = dim2, byrow = T)
+  image(-t(squared.pheno[121:1,]), yaxt='n', xaxt='n',main = paste(c("generation: ",generation)), col = gray.colors(12), asp=1.21)
+}
+```
+
