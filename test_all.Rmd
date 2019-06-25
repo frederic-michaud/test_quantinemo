@@ -39,7 +39,7 @@ test <- function(component){
 ```
 
 ```{r}
-test("more_allele")
+test("fitness_landscape_various_patch")
 ```
 
 

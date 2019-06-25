@@ -1,0 +1,129 @@
+---
+title: "Testing the fitness landscape on various patch"
+output:
+html_document: default
+---
+
+This notebook test if we can draw an arbitrary fitness landscape for defining how we translate phenotype value into fitness for various patch. 
+
+
+### Loading packages
+```{r}
+devtools::load_all("../rquantinemo")
+```
+
+### Defining the fitness landscape    
+We just take a landscape which follow a Gaussian (stabilizing selection) with the highest value given by the value of the pixel of the picture.
+```{r}
+dim1 <-  25
+dim2 <-  25
+phenotype_reduce <- seq(-1,1,0.01)
+landscape = matrix(rep(0,dim1*dim2*201),ncol=201)
+for (x in 1:dim1){
+  for (y in 1:dim2){
+      x_renorm = 2*(x - dim1/2)/dim1 #goes between -1 and 1
+      y_renorm = 2*(y - dim2/2)/dim2
+      fancy_shape <- 2*sqrt(x_renorm**2 + y_renorm**2)/sqrt(2)-1
+      landscape[(x -1) * dim2 + y, ] <-  exp(-(fancy_shape - phenotype_reduce)**2/0.2)
+  }
+}
+phenotype = matrix(rep(0,dim1*dim2*201),ncol=201)
+for (x in 1:dim1){
+  for (y in 1:dim2){
+          phenotype[(x -1) * dim2 + y, ] <- phenotype_reduce
+  }
+}
+plot(phenotype_reduce, landscape[(x -1) * dim2 + y, ])
+```
+
+
+### Writting the phenotype landscape into file readable by Qn
+```{r}
+write_matrix_quanti <- function(input.matrix, file.name){
+  write("{", file = file.name)
+  for (i in 1:(nrow(input.matrix))){
+    write("{", file = file.name,append=TRUE)
+    write(paste(input.matrix[i,], " "), file = file.name,append=TRUE)
+    write("}", file = file.name,append=TRUE)
+  }
+  write("}", file = file.name,append=TRUE)
+}
+sim.dir = "fitness_landscape_various_patch_test/"
+dir.create(sim.dir, showWarnings = FALSE)
+write_matrix_quanti(t(landscape), paste(sim.dir, "/landscape.txt",sep=""))
+write_matrix_quanti(t(phenotype), paste(sim.dir, "/phenotype.txt",sep=""))
+```
+
+### Setting the parameters for the simulation    
+
+We are simulating a square of patch of dimension dim1 x dim2 (see image size). The selected phenotype depend on the picture uploaded.
+For the first 30 generations, we have no migration. We then turn on migration for 20 generations. 
+
+```{r}
+nb.loci = 100
+nb.generation = 50
+nb.individual = 50
+parameters = list("generations" = nb.generation,
+                  "patch_number" = dim1*dim2,
+                  "patch_capacity" = nb.individual,
+                  "quanti_loci" = nb.loci,
+                  "quanti_all" = 2,
+                  "quanti_selection_model" = 3,
+                  "quanti_save_phenotype" = 1,
+                  "dispersal_model" = 3,
+                  "dispersal_border_model" = 1,
+                  "dispersal_lattice_dims" =paste(c("{",dim1, dim2,"}"),collapse = " "),
+                  "dispersal_rate" = 0,
+                  "quanti_fitness_landscape" =  "$landscape.txt",
+                  "quanti_phenotype_landscape" = "$phenotype.txt"
+)
+my_sim.base = new("simulation",sim.dir = sim.dir, parameters = parameters)
+```
+
+### Creating and adding the allelic file
+```{r}
+allele_distrib = data.frame("col_locus" =  rep(seq(1,nb.loci,1),each = 2),
+                          "col_allele" =  rep(c(1,2),nb.loci),
+                          "col_allelic_value" = rep(c(0.005,-0.005),nb.loci), 
+                          "col_ini_freq" =rep(0.5,2*nb.loci))
+my_sim.base <-  addFile(my_sim.base, "quanti_allelic_file",allele_distrib)
+```
+
+### Running the simulation
+```{r}
+my_sim = my_sim.base
+my_sim@sim.name <- "circle"
+run(my_sim, verbose = F)
+```
+
+### Analysing results   
+We then load the phenotype and compute the mean phenotype per patch. By plotting a heatmap of the phenotype, we retrieve the initial image. Fantastic, no?
+```{r}
+for (generation in c(1,2,5,10,nb.generation)){
+  geno <- loadPheno(my_sim,generation = generation)
+  geno_per_patch = matrix(geno[,2],nrow = nb.individual)
+  all_mean <- colMeans(geno_per_patch)
+  squared.pheno <- matrix(all_mean, ncol = dim2, byrow = T)
+  image(-t(squared.pheno[dim1:1,]), yaxt='n', xaxt='n',main = paste(c("generation: ",generation)), col = gray.colors(12), asp=1.21)
+}
+```
+
+
+### Formal test
+We then load the phenotype and compute the mean phenotype per patch. By plotting a heatmap of the phenotype, we retrieve the initial image. Fantastic, no?
+```{r}
+
+  geno <- loadPheno(my_sim,generation = -1)
+  geno_per_patch = matrix(geno[,2],nrow = nb.individual)
+  all_mean <- colMeans(geno_per_patch)
+  all_dist = c()
+for (x in 1:dim1){
+  for (y in 1:dim2){
+      x_renorm = 2*(x - dim1/2)/dim1 #goes between -1 and 1
+      y_renorm = 2*(y - dim2/2)/dim2
+      fancy_shape <- 2*sqrt(x_renorm**2 + y_renorm**2)/sqrt(2)-1
+      all_dist = c(all_dist, fancy_shape-all_mean[(x -1) * dim2 + y] )
+  }
+}
+  stopifnot(sum(all_dist*all_dist)< 6)
+```
