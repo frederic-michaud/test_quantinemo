@@ -10,7 +10,7 @@ Then we check if we can reload the seed from a previous simulation.
 
 ### Setting general parameter for the simulaiton
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list(
   "generations" = 100,
   "mating_nb_offspring_model"=2, #randomness come from here

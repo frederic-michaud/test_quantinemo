@@ -10,7 +10,7 @@ In the second part, we also check intermediate regime, which at the moment doesn
 
 ## loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 ```
 
 #### creating initial genotype

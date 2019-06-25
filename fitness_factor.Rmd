@@ -8,7 +8,7 @@ This notebook test what happen if we use the fitness factor (which allow to tran
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 ```
 
 

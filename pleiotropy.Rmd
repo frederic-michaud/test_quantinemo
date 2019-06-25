@@ -7,7 +7,7 @@ The goal of this notebook is to check if pleiotropy works. First step is to defi
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 3,
                   "patch_capacity" = 100000,
                   "mating_system" = 0,

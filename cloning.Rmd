@@ -10,7 +10,7 @@ We then check in the Phenotype that the right proportion of individual has no fa
 
 ###loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "cloning/")
 ```
 

@@ -8,7 +8,7 @@ This notebook test the femal sex allocation. If we have a trait which give us th
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "female_sex_allocation/")
 ```
 

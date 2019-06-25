@@ -9,7 +9,7 @@ Due to the stochastic component of quantiNemo, some test might fail even if the 
 ### Defining components
 ```{r}
 working.components =  c("cloning", "dispersal", "population_grow", "extinction", "fitness_factor", "fitness_landscape", "recombination","selection_coefficient", "selection_level", "sex_determination", "density_migration_rate", "stat_sampling",
-                        "macro", "random_per_replicate","initial_genotype", "coalescence", "external_file","mutation_model")
+                        "macro", "random_per_replicate","initial_genotype", "coalescence", "external_file","mutation_model","fitness_landscape_various_patch")
 not.working.components = c("female_sex_allocation",  "friction", "pleiotropy")
 components = c(working.components, not.working.components)
 ```

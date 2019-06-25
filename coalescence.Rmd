@@ -11,7 +11,7 @@ Open question. Why if we have several patch with no migration, we still have a c
 
 ### Loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 library(ape)
 my_sim.base = new("simulation",sim.dir = "coalescence/")
 ```

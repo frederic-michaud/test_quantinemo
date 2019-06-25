@@ -8,7 +8,7 @@ In this notebook, we show the different possible population grow that are implem
 
 ##loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "population_grow/",parameters=list("generations" = 1000, "patch_capacity" = 1000,"stat" = "{adlt.nbInd}"))
 ```
 

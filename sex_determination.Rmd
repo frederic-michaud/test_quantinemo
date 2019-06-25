@@ -8,7 +8,7 @@ In this notebook, we check if we can set the sex of an individu using the value 
 
 ##loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 40,
                   "patch_capacity" = 100, 
                   "replicates" = 25, 

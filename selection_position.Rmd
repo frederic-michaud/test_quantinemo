@@ -17,7 +17,7 @@ Secondly, we check that if a deleterious allele is recesive, the number of homoz
 
 ### loading package and setting minimal simulation for first part
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 100,
                   "patch_capacity" = 100,
                   "patch_number" = 80,

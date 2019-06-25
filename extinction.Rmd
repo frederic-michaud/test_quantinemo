@@ -9,7 +9,7 @@ To do so, we create a meta-population with a lot of patch, and count the number 
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "extinction/")
 ```
 

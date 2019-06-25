@@ -16,7 +16,7 @@ To visualize the behaviour, we use the following meta-pop. We use two patch, one
 
 ### Setting general parameter for the simulaiton
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list(
   "generations" = 2,
   "mating_nb_offspring_model"=1, 

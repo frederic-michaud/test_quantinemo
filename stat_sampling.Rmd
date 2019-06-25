@@ -9,7 +9,7 @@ In the first part, we try to select subpatch. To do so we simply specify that we
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 3,
                   "dispersal_rate" = 0.2,
                   "mating_nb_offspring_model" =6,

@@ -12,7 +12,7 @@ In the second part, we follow the same analysis, but instead of changing the ini
 ##Changing frequency
 ### General input of the folder
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim <- new("simulation", sim.dir = "selection_coefficient/")
 my_sim  <- setParameter(my_sim,"replicates",50)
 my_sim  <- setParameter(my_sim,"generations",250)

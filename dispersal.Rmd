@@ -8,7 +8,7 @@ To do so, we first implement some general function to move population arround an
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 my_sim.base = new("simulation",sim.dir = "dispersal/")
 my_sim.base  <- setParameter(my_sim.base,"generations",75)
 my_sim.base  <- setParameter(my_sim.base,"mating_nb_offspring_model",2)

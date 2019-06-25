@@ -9,7 +9,7 @@ To do so, we put twice the same genotype on close trait, and see if they are rec
 
 ##loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 patch.capacity <- 2000
 recombinationRate <- function(distance){(1-exp(-2*distance/100))/2}
 parameters = list("generations" = 2, 

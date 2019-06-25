@@ -10,7 +10,7 @@ If it's superior to one, it should increase. This can be compared to analytical 
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 100,
                   "patch_capacity" = 100,
                   "patch_number" = 20,                  

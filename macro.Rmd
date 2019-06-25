@@ -7,7 +7,7 @@ The goal of this notebook is to check how does the macros perform
 
 ### loading package and setting minimal simulation
 ```{r}
-devtools::load_all(pkg="../RQuantiNemo")
+devtools::load_all("../RQuantiNemo")
 parameters = list("generations" = 5,
                   "patch_capacity" = 100,
                   "patch_number" = 1000,
